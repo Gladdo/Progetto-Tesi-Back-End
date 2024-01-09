@@ -1,0 +1,15 @@
+#huggingface-hub==0.15.1
+huggingface-hub==0.16.4
+importlib-metadata==6.8.0
+Pillow==9.3.0
+safetensors==0.3.1
+tensorboard==2.14.1
+tensorboard-data-server==0.7.2
+tensorflow-estimator==2.14.0
+#tokenizers==0.13.3
+tokenizers==0.14
+toml==0.10.2
+torchmetrics==1.2.0
+tqdm==4.66.1
+-e git+https://github.com/bmaltais/kohya_ss.git@15dd0a638af86f89dd0c457428e165598d4884a2#egg=library
+voluptuous==0.13.1
