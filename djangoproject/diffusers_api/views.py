@@ -86,33 +86,29 @@ def GenerateImage(request):
     other_details = request.GET.get("other_details")
 
     # Chiamata allo script di generazione
-    
-    #image = generate(poi_obj, poi_image_obj, action_obj, action_image_obj, age, gender, other_details, using_lora, selected_lora)
-    
-    #unique_file_name =  "" + str(uuid.uuid4())[:8] + ".jpg"
-    #image.save(settings.MEDIA_ROOT + "/outputs/" + unique_file_name)
-    #print("generated image: " + settings.MEDIA_ROOT + "/outputs/" + unique_file_name)
-    
+    """
+    # PER GENERATORE CLASSICO
+    image = generate(poi_obj, poi_image_obj, action_obj, action_image_obj, age, gender, other_details, using_lora, selected_lora)
+    unique_file_name =  "" + str(uuid.uuid4())[:8] + ".jpg"
+    image.save(settings.MEDIA_ROOT + "/outputs/" + unique_file_name)
+    print("generated image: " + settings.MEDIA_ROOT + "/outputs/" + unique_file_name)
+    """
+
     #For ram free:
     unique_file_name = generate(poi_obj, poi_image_obj, action_obj, action_image_obj, age, gender, other_details, using_lora, selected_lora)
-     
     url_json = { "url" : settings.MEDIA_URL + "outputs/" + unique_file_name }
-    return JsonResponse(url_json, safe=False)
 
-    #response = HttpResponse(content_type="image/jpeg")
-    #image.save(response, "JPEG")
-    #return response
+    return JsonResponse(url_json, safe=False)
 
 """---------------------------------------------------------------------------------------------------------------------
     VIEW | DB SUMMARY (GET)
 ---------------------------------------------------------------------------------------------------------------------"""
 """
-Questa vista restituisce all'interno di un JSON la rappresentazione degli item dpresenti in alcune tavole del DB; fa ciò
-utilizzando i Serializer di djangorestframework:
+Questa vista restituisce un JSON contenente i serializer delle entry delle seguenti tabelle:
 - POI: Restituisce i nomi dei Point Of Interest disponibili
 - POIImage: Restituisce per ogni immagine il POI a cui è associato, il nome dell'immagine e l'url statica a cui trovarla
 - Action: Restituisce i nomi delle azioni disponibili 
-Viene utilizzata dal front end per caricare i valori disponibili dentro i Pickers.
+Viene utilizzato dal front end per mostrare le scelte disponibili all'utente.
 """
 
 def DBSummary(request):
@@ -137,7 +133,9 @@ def DBSummary(request):
 """---------------------------------------------------------------------------------------------------------------------
     VIEW | POI IMAGES FROM POI NAME (GET)
 ---------------------------------------------------------------------------------------------------------------------"""
-
+"""
+Questa vista restituisce tutte le immagini relative ad un point of interest
+"""
 "url/get_poi_images?poi=poi_name"
 
 def GetPoiImages(request):
@@ -155,8 +153,8 @@ def GetPoiImages(request):
 """
 Se questa vista viene chiamata con il metodo GET allora restituisce un form per fare un POST di 5 immagini, quelle che vengono
 utilizzate per il training.
-Se invece è chiamata con il metodo POST con le 5 immagini associate, allora da il via al training LoRA con quelle 5
-immagini e restituisce all'utente un codice per l'utilizzo del modello LoRA che verrà utilizzato.
+Se invece è chiamata con il metodo POST e nel body sono presenti le 5 immagini, allora da il via al training del modello LoRA 
+e restituisce all'utente un codice ad esso associato (che potrà utilizzare una volta che il modello è pronto).
 """
 
 @csrf_exempt
@@ -213,7 +211,6 @@ L'esecuzione del POST è consentita solo ad un admin che abbia fornito username 
 
 @ensure_csrf_cookie
 def PostLoraModel(request):
-    # Gladdo:(TODO) Controlla che username e password siano presenti nella richiesta di POST
     if( request.method=='POST'):
         if( 'username' not in request.POST.keys()) or ( 'password' not in request.POST.keys()):
             return HttpResponse("POST data missing") 
@@ -234,6 +231,7 @@ def PostLoraModel(request):
     VIEW | CHECK LORA CODE EXISTENCE (GET)
 ---------------------------------------------------------------------------------------------------------------------"""
 """
+Questa vista consente di checkare lo stato del training del modello LoRA
 """
 
 def CheckLoraCode(request):

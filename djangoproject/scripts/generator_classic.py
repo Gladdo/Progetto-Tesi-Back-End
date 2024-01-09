@@ -142,7 +142,10 @@ def generate(
     """ 
     In questo primo step si usa un modello addestrato specificatamente a fare l'inpainting; non tutti i modelli sono infatti
     addestrati a questo scopo: modelli non addestrati per fare questa particolare tecnica finiscono tendenzialmente a impattare
-    maggiormente il background sul quale viene fatto l'inpaint del soggetto desiderato.
+    maggiormente il background sul quale viene fatto l'inpaint del soggetto desiderato e dunque non sono adatti.
+    Infatti dato che in questo step vogliamo generare da zero un determinato soggetto, la strenght della generazione è alta e
+    si da molta libertà al generatore di cambiare l'immagine; se un modello non è addestrato per l'inpainting coglierà questa
+    occasione per modificare l'intera area contenuta nella maschera (background incluso)
     """
 
     # ---------------------------------------------------------
@@ -184,10 +187,17 @@ def generate(
     Nel primo step, avendo utilizzato un modello specifico per l'inpainting, si è dovuto scendere a compromessi con la qualità
     dell'immagine generata: se da una parte non viene toccato lo sfondo, generalmente questi modelli possono non essere
     addestrati alla generazione del concetto che vogliamo rappresentare e possono quindi generare un'immagine di pessima qualità.
-    Per ovviare a questo problema il secondo step esegue un'inpaiting che va a ridefinire l'area toccata dal precedente step 
-    (delinata da una mask); questo step deve tener conto dei seguenti aspetti e bilanciare di conseguenza il suo impatto:
+
+    Adesso dunque dobbiamo migliorare la qualità di quanto generato nel precedente step; per fare ciò si utilizza un'altro step di
+    inpainting, con la stessa mask precedente, ma utilizzando un modello addestrato appositamente per la generazione di immagini 
+    fotorealistiche.
+
+    Tale modello può non essere tuttavia addestrato a fare l'inpainting; per tale motivo dobbiamo vincolare la strength a bassi
+    valori, altrimenti cè il rischio di impattare in modo sostanziale lo sfondo.
+    Questo step deve tener conto dei seguenti aspetti e bilanciare di conseguenza il suo impatto:
         - Avere sufficiente libertà da poter ridefinire in modo sostanziale il soggetto precedentemente inserito
         - Avere sufficiente restrizione da non impattare troppo il background
+    
     Il risultato di questo step dev'essere una parziale omogenizzazione della qualità dell'immagine (quella sottostante la
     maschera)
     """
@@ -218,13 +228,14 @@ def generate(
     PIPELINE | Inpaint per dettagliare
     ---------------------------------------------------------------------------------------------------------------------"""
     """
-    Esegue un passaggio analogo al precedente; infatti un singolo passaggio di definizione può non essere sufficiente per
-    ottenere la qualità desiderata.
-    Come detto siamo vincolati dal non voler completamente scombussolare l'immagine di background e per questo motivo lo
-    step di redefinizione è ristretto a una strength bassa (si vuole mantenere l'immagine più coerente possibile a quella
-    originale).
-    L'idea è che più step con poca strength riescono ad aggiungere più dettagli e rimanere più coerenti all'immagine originale
-    rispetto ad un singolo step con una strength maggiore.
+    Esegue un passaggio analogo al precedente; infatti, data la bassa strenght utilizzata, un singolo passaggio di definizione può 
+    non essere sufficiente per ottenere la qualità desiderata.
+    
+    Un'opzione poteva essere aumentare la strenght del passo precedente; tuttavia si vuole mantenere l'immagine più coerente possibile 
+    a quella originale.
+
+    L'idea è dunque di utilizzare più step ciascuno con una strength molto bassa: questi riescono ad aggiungere dettagli senza 
+    scombussolare l'immagine originale (a differenza dell'utilizzo di un singolo step con una strength maggiore).
     """
 
     # ---------------------------------------------------------
@@ -249,13 +260,13 @@ def generate(
     PIPELINE | Omogenizzazione dell'immagine attraverso Img2Img
     ---------------------------------------------------------------------------------------------------------------------"""
     """
-    I precedenti step hanno aiutato a dettagliare il soggetto inpaintato nel primo step andando ad applicare migliorie in
-    un'area dell'immagine delimitata da una maschera (quella che appunto contiene il soggetto dell'inapint); dopo due
-    step successivi di inpaint di questo tipo può dunque iniziare a comparire una netta evidenza tra quella che è il bordo
-    della maschera precedentemente ritoccata e l'esterno della maschera in cui è ancora rappresentato lo sfondo originale.
-    Questo step serve proprio per ovviare a tale problema: prende in input l'intera immagine e ripropone il prompt originale:
-    applica un lieve strato di noise all'immagine (poca strength) e provvede a risolverlo; in questo modo si ottiene una
-    immagine complessivamente "ritoccata" allo stesso modo.
+    I precedenti step hanno aiutato a dettagliare il soggetto generato del primo step andando ad applicare migliorie in
+    un'area dell'immagine delimitata da una maschera; nonostante l'utilizzo di una strength bassa, dopo due step successivi di 
+    inpaint può iniziare a comparire una netta separazione tra quella che è l'area dell'immagine sotto la precedente maschera e l'esterno 
+    della stessa ( in cui è ancora conservato senza ritocchi lo sfondo originale).
+    Questo step serve proprio per ovviare a tale problema: si da in input l'intera immagine e il prompt originale ad uno step di
+    generazione Image to Image; impostando nuovamente uno strenght basso si va ad omogenizzare la qualità dell'immagine senza
+    impattarne il contenuto.
     """
 
     # ---------------------------------------------------------
@@ -288,16 +299,27 @@ def generate(
     PIPELINE | SUBJECT FACE INPAINT
     ---------------------------------------------------------------------------------------------------------------------"""
     """
-    Inserimento del volto del soggetto all'interno dell'immagine; si utilizza nuovamente il modello specifico per l'inpainting
-    con la speranza che non vada ad impattare troppo la parte d'immagine non inerente al volto.
-    Si effettua un procedimento di inpainting per fare uso dell'immagine generata precedentemente: il modello utilizzato nei
-    precedenti step ha già generato un volto casuale; questo step può fare uso di tale informazione: utilizzando un'inpaint
-    NON completamente "sovrascrivente" si può fare uso del precedente posizionamento della testa generata, dell'angolo utilizzato,
-    delle dimensioni utilizzate e via dicendo e semplicemente si va a trasformare i tratti nel volto del soggetto desiderato.
-    La chiave per questo step è trovare il giusto valore per lo strength dell'inpaint:
+    A questo punto i precedenti step hanno già generato il soggetto nell'ambiente desiderato, con la posa desiderata e una
+    qualiutà soddisfacente; bisogna procedere ad inserire il volto dell'utente.
+    Per fare ciò si fa nuovamente uso dell'inpaiting utilizzando ancora un modello specificatamente addestrato a tale scopo.
+    La maschera di questo inpaiting è necessariamente attorno al volto del soggetto, con una grandezza sufficente a ricoprire almeno
+    il doppio dell'estensione della testa (così da lasciare margine al generatore di lavorare eventuali accessori per la testa o
+    semplicemente i capelli).
+    Per far si di rendere coerente il nuovo volto con la precedente immagine, si vuole fare in modo che questo step non vada a 
+    sostiture completamente il contenuto della maschera, bensì tenga di conto la testa iniziale e faccia uso del suo posizionamento,
+    dell'angolo utilizzato e delle sue dimensioni; in questo modo l'inpainting va solamente a trasformare i tratti nel volto 
+    del soggetto, ne cambia la fisionomia, ma presupponibilmente lascia invariata la posizione della testa.
+    La chiave per questo step è dunque di trovare il giusto valore per lo strength dell'inpaint:
         - Valori troppo alti rischiano di sovrascrivere completamente il contenuto della maschera per il volto
         - Valori troppo bassi rischiano di non sovrascrivere il precedente volto con i tratti del nuovo volto
+
+    Un'altro importante aspetto è lasciare al generatore sufficienti pixel su cui inserire il volto: il generatore può essere
+    addestrato su volti appresi in alta risoluzione; se adesso il volto dev'essere generato in un insieme di pixel inferiore,
+    il generatore può non essere capace di sintetizzare le giuste features in tale numero contenuto di pixels.
+    Questo aspetto può essere in aprte arginato andando a produrre LoRA addestrato su diverse risoluzioni del volto; oppure, come
+    proposto qui, è necessario aumentare la risoluzione dell'immagine prodotta in output.
     """
+
     from libs.diffusers.scripts.convert_lora_safetensor_to_diffusers import convert
     import uuid
     import os

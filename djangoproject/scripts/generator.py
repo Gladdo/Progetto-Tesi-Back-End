@@ -354,11 +354,6 @@ def generate(
     """---------------------------------------------------------------------------------------------------------------------
     PIPELINE | Inpaint della posa sull'immagine di background
     ---------------------------------------------------------------------------------------------------------------------"""
-    """ 
-    In questo primo step si usa un modello addestrato specificatamente a fare l'inpainting; non tutti i modelli sono infatti
-    addestrati a questo scopo: modelli non addestrati per fare questa particolare tecnica finiscono tendenzialmente a impattare
-    maggiormente il background sul quale viene fatto l'inpaint del soggetto desiderato.
-    """
 
     p = mp.Process(target=step1, args=( MODEL_ID1, prompt1, negative_prompt1, inference_steps1, strength1, cfg1, image1, control_image1, mask_image1, user_data_path))
     p.start()
@@ -372,17 +367,7 @@ def generate(
     """---------------------------------------------------------------------------------------------------------------------
     PIPELINE | Inpaint per dettagliare 
     ---------------------------------------------------------------------------------------------------------------------"""
-    """
-    Nel primo step, avendo utilizzato un modello specifico per l'inpainting, si è dovuto scendere a compromessi con la qualità
-    dell'immagine generata: se da una parte non viene toccato lo sfondo, generalmente questi modelli possono non essere
-    addestrati alla generazione del concetto che vogliamo rappresentare e possono quindi generare un'immagine di pessima qualità.
-    Per ovviare a questo problema il secondo step esegue un'inpaiting che va a ridefinire l'area toccata dal precedente step 
-    (delinata da una mask); questo step deve tener conto dei seguenti aspetti e bilanciare di conseguenza il suo impatto:
-        - Avere sufficiente libertà da poter ridefinire in modo sostanziale il soggetto precedentemente inserito
-        - Avere sufficiente restrizione da non impattare troppo il background
-    Il risultato di questo step dev'essere una parziale omogenizzazione della qualità dell'immagine (quella sottostante la
-    maschera)
-    """
+
     previous_image = Image.open(user_data_path + "/out1.jpg")
 
     p = mp.Process(target=step23, args=(
@@ -400,32 +385,9 @@ def generate(
     gc.collect()
     
     """---------------------------------------------------------------------------------------------------------------------
-    PIPELINE | Inpaint per dettagliare
+    PIPELINE | Inpaint per dettagliare & Omogenizzazione dell'immagine attraverso Img2Img 
     ---------------------------------------------------------------------------------------------------------------------"""
-    """
-    Esegue un passaggio analogo al precedente; infatti un singolo passaggio di definizione può non essere sufficiente per
-    ottenere la qualità desiderata.
-    Come detto siamo vincolati dal non voler completamente scombussolare l'immagine di background e per questo motivo lo
-    step di redefinizione è ristretto a una strength bassa (si vuole mantenere l'immagine più coerente possibile a quella
-    originale).
-    L'idea è che più step con poca strength riescono ad aggiungere più dettagli e rimanere più coerenti all'immagine originale
-    rispetto ad un singolo step con una strength maggiore.
-    """
 
-    
-
-    """---------------------------------------------------------------------------------------------------------------------
-    PIPELINE | Omogenizzazione dell'immagine attraverso Img2Img
-    ---------------------------------------------------------------------------------------------------------------------"""
-    """
-    I precedenti step hanno aiutato a dettagliare il soggetto inpaintato nel primo step andando ad applicare migliorie in
-    un'area dell'immagine delimitata da una maschera (quella che appunto contiene il soggetto dell'inapint); dopo due
-    step successivi di inpaint di questo tipo può dunque iniziare a comparire una netta evidenza tra quella che è il bordo
-    della maschera precedentemente ritoccata e l'esterno della maschera in cui è ancora rappresentato lo sfondo originale.
-    Questo step serve proprio per ovviare a tale problema: prende in input l'intera immagine e ripropone il prompt originale:
-    applica un lieve strato di noise all'immagine (poca strength) e provvede a risolverlo; in questo modo si ottiene una
-    immagine complessivamente "ritoccata" allo stesso modo.
-    """
     previous_image = Image.open(user_data_path + "/out23.jpg")
 
     p = mp.Process(target=step4, args=(previous_image, MODEL_ID4, prompt4, negative_prompt4, inference_steps4, strength4, cfg4, user_data_path))
@@ -441,17 +403,6 @@ def generate(
     """---------------------------------------------------------------------------------------------------------------------
     PIPELINE | SUBJECT FACE INPAINT
     ---------------------------------------------------------------------------------------------------------------------"""
-    """
-    Inserimento del volto del soggetto all'interno dell'immagine; si utilizza nuovamente il modello specifico per l'inpainting
-    con la speranza che non vada ad impattare troppo la parte d'immagine non inerente al volto.
-    Si effettua un procedimento di inpainting per fare uso dell'immagine generata precedentemente: il modello utilizzato nei
-    precedenti step ha già generato un volto casuale; questo step può fare uso di tale informazione: utilizzando un'inpaint
-    NON completamente "sovrascrivente" si può fare uso del precedente posizionamento della testa generata, dell'angolo utilizzato,
-    delle dimensioni utilizzate e via dicendo e semplicemente si va a trasformare i tratti nel volto del soggetto desiderato.
-    La chiave per questo step è trovare il giusto valore per lo strength dell'inpaint:
-        - Valori troppo alti rischiano di sovrascrivere completamente il contenuto della maschera per il volto
-        - Valori troppo bassi rischiano di non sovrascrivere il precedente volto con i tratti del nuovo volto
-    """
 
     result = Image.open(user_data_path + "/out4.jpg")
 
