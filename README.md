@@ -83,19 +83,21 @@ I tempi medi di esecuzione del training nel sistema di riferimento vanno dai 60 
 
 Per gli strumenti di inferenza (generazione) è stato fatto uso della libreria diffusers [2].
 
+Come prima cosa vediamo come si interagisce con l'API per avviare la generazione:
+
 #### Interfaccia dell'API
 
-Si accede alla generazione di un'immagine attraverso la vista GenerateImage dell'API a cui devono essere forniti i seguenti parametri:
+Si accede alla generazione di un'immagine attraverso la vista GenerateImage a cui devono essere forniti i seguenti parametri:
 
-- poi_name: nome del punto d'interesse contenete l'immagine su cui iniziare la generazione del soggetto
-- poi_image: nome dell'immagine di background da cui iniziare la generazione; deve combaciare con il nome di una immagine nel database
+- poi_name: nome del punto d'interesse selezionato che contiene l'immagine poi_image sulla quale verrà iniziata la generazione
+- poi_image: nome dell'immagine di background da cui iniziare la generazione; deve combaciare con il nome di una immagine relativa al poi_name selezionato
 - action_name: nome dell'azione da utilizzare per il soggetto generato; deve combaciare con il nome di un'azione nel database
-- action_shot_type: a che distanza è inserito il soggetto nell'immagine; è necessario fornire uno dei seguenti valori: "CLS", "MES", "FUS" che Rispettivamente indicano: close, medium distance, far.
+- action_shot_type: specifica a che distanza è inserito il soggetto nell'immagine; è necessario fornire uno dei seguenti valori: "CLS", "MES", "FUS" che Rispettivamente indicano: close, medium distance, far.
 - age: deve indicare l'età del soggetto attraverso uno dei seguenti aggettivi: "young", "adult", "old"
 - gender: deve indicare il sesso del soggetto attraverso uno dei seguenti valori: "man", "woman"
 - other_details: deve indicare dettagli sul soggetto; viene inserito nel prompt di generazione con la struttura "wearing" + other_details
-- selected_lora: può contenere o meno un LoRA code; se non contiene nessun codice o un codice errato, semplicemente la generazione avviene senza l'inserimento del soggetto, altrimenti viene eseguito pure quest'ultimo step.
-- dynamic_action_selection: deve indicare true o false; nel primo caso l'action_name scelto viene sovrascritto dalla selezione dinamica della posa fatta dallo script action_picker.py, altrimenti è utilizzata l'action_name scelta dall'utente
+- selected_lora: può contenere o meno un LoRA code; se non contiene nessun codice o un codice errato, semplicemente la generazione avviene senza l'inserimento del volto dell'utente, altrimenti viene eseguito pure lo step di inserimento.
+- dynamic_action_selection: deve indicare true o false; nel primo caso l'action_name viene sovrascritto dalla selezione dinamica della posa, fatta dallo script action_picker.py; nel secondo caso è utilizzato l'action_name scelto manualmente dall'utente
 - action_prompt: contiene la descrizione dell'azione che viene eventualmente utilizzata dallo script action_picker.py per la selezione dinamica.
 
 #### Esecuzione della vista di generazione (GenerateImage in views.py)
