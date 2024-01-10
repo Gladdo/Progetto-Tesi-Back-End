@@ -92,6 +92,7 @@ Impostati i precedenti parametri, la vistaprocede nel seguente modo:
   - L'immagine per la maschera di inserimento del volto
 - Si controlla se l'eventuale codice LoRA fornito combacia con un modello esistente; in tal caso lo si utilizza per l'inserimento del volto dell'utente
 - Quindi si lancia lo script di generazione; questo provvederà a mettere l'immagine di output nella folder data/outputs dandogli un nome generato casualmente (con un codice di 8 cire); tale codice è restituito alla vista che poi termina comunicandolo all'utente; l'utente potrà accedere in modo statico attraverso una request al server tramite un'url con la seguente struttura:
+  
 &emsp;&emsp;&emsp;&emsp; server_address/data/outputs/<codice>.
 
 
