@@ -228,17 +228,17 @@ Il tempo per quest'ultimo step di generazione può essere drasticalmente ridotto
  
 ### SUMMARY
 
-In generale la generazione di un'immagine, nel sistema di riferimento, richiede dai 10 ai 15 minuti; tuttavia i bottleneck principali sono l'avvio della pipeline piuttosto che l'inferenza stessa: sommando i tempi di inferenza dei vari step di media è speso 6 minuti complessivi, quantità che può essere drasticalmente ridotta riducendo la risoluzione dell'ultimo step, quello che poi ha di fatto i tempi di inferenza più lunghi.
+In generale la generazione di un'immagine, nel sistema di riferimento, richiede dai 10 ai 15 minuti; tuttavia gran parte dei rallentamenti sono per la gestione della di generazione piuttosto che per l'inferenza di generazione stessa: sommando i tempi di inferenza dei vari step questi di media impiegano solo 6 minuti complessivi, quantità che può essere drasticalmente ridotta riducendo la risoluzione dell'ultimo step o semplicemente utilizzando hardware più appropiati.
 
-In relazione al tempo di setup della pipeline è invece necessario fare la seguente osservazione: nel caso del sistema di riferimento si ha a disposizone una RAM contenuta e diventa dunque necessario alternare la presenza dei vari modelli in esecuzione; in una situazione di deploy, su macchine adeguate, ciascuno dei vari step può essere implementato su diversi hardware e ciascuna pipeline può rimanere costantemente pronta all'inferenza, riducendo teoricamente tempi in modo netto.
+In relazione al tempo di setup della pipeline è invece necessario fare la seguente osservazione: nel caso del sistema di riferimento si ha a disposizone una RAM contenuta e diventa dunque necessario alternare la presenza dei vari modelli in esecuzione; in una situazione di deploy, su macchine adeguate, è possibile evitare questa alternanza e caricare le pipeline una sola volta all'avvio dell'applicazione, riducendo drasticamente i tempi di generazione.
 
 ### Osservazione: generator.py vs generator_classic.py
 
-Nonostante implementano gli stessi step computazionali, la necessità di generator.py rispetto a generator_classic.py nasce dal seguente problema riscontrato: quando si alterna i modelli di generazione in RAM la libreria diffusers produce dei Memory Leak; questi, gradualmente su diverse generazioni, rischiano di farla straripare.
+Nonostante implementano gli stessi step computazionali, la necessità di generator.py rispetto a generator_classic.py nasce dal seguente problema riscontrato: quando si alterna i modelli di generazione in RAM la libreria diffusers produce dei Memory Leak; questi, gradualmente su diverse generazioni, rischiano di farla straripare (per via del garbage collector di python questi leaks non avvengono in modo consistente e riproducibile, ma spesso avvengono).
 
-Per ovviare a tale problema, che è possibile ancora riscontrare utilizzando lo script generator_classic.py, ho optato per la seguente strategia: gli step di generazione, dove carico i modelli in RAM, sono tutti eseguiti utilizzando dei subprocess; i vari step si comunicano le immagini semplicemente salvandole sul disco.
+Per ovviare a tale problema, che è possibile ancora riscontrare se si va ad utilizzare lo script generator_classic.py, ho optato per la seguente strategia: gli step di generazione, dove carico i modelli in RAM, sono tutti eseguiti utilizzando dei subprocess; i vari step si comunicano le immagini semplicemente salvandole sul disco (proprio attraverso la folder tmp_data citata in precedenza).
 
-In questo modo, a prescindere dalle problematiche (inarginabili) di memory leaks inerenti alla libreria diffusers, terminato uno step di generazione viene chiuso il subproces all'interno del quale era stato caricato il modello in RAM; di conseguenza tutta la sua RAM è liberata assieme ad eventuali problemi di leak.
+In questo modo, a prescindere dalle problematiche (inarginabili) di memory leaks inerenti alla libreria diffusers (e al poco controllo della memoria dovuto a python), al termine uno step di generazione si chiude il subproces che aveva caricato in RAM il modello; di conseguenza tutta la sua RAM è liberata, assieme ad eventuali problemi di leak dovuti al caricamento del modello in RAM.
 
 ## TO-DO:
 
