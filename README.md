@@ -102,17 +102,17 @@ Si accede alla generazione di un'immagine attraverso la vista GenerateImage a cu
 
 #### Esecuzione della vista di generazione (GenerateImage in views.py)
 
-Impostati i precedenti parametri, la vista procede nel seguente modo: 
+Forniti i precedenti parametri la vista procede nel seguente modo: 
 
 - Viene selezionata l'immagine di background estrendo dal db l'oggetto poi_image_obj: questo contiene l'immagine da utilizzare e la descrizione di tale immagine (che viene utilizzata nella costruzione del prompt)
 - Viene selezionata l'azione da utilizzare, tramite la scelta dinamica o manuale dell'utente, estraendo dal db l'oggetto action_obj: questo specifica il nome e la descrizione dell'azione selezionata
-- A questo punto si prende tutte le immagini relative all'azione selezionata filtrando la table delle immagini con l'action_obj appena scelto; si ottiene una lista di immagini relative ad una stessa azione ma con differenti distanze del soggetto
-- Si utilizza l'action_shot_type per scegliere definitivamente quali immagini dell'azione utilizzare e si mettono nell'oggetto action_image_obj: questo contiene
+- A questo punto si filtra la table delle immagini con l'action_obj appena scelto in modo da ottenere le action_images associate all'azione scelta; le immagini in tale lista sono relative ad una stessa azione ma con differenti distanze del soggetto
+- Si utilizza l'action_shot_type per scegliere definitivamente la action_image_obj da utilizzare; questo contiene
   - L'immagine del manichino utilizzato per guidare la generazione della posa
   - L'immagine per la maschera di inserimento della posa
   - L'immagine per la maschera di inserimento del volto
-- Si controlla se l'eventuale codice LoRA fornito combacia con un modello esistente; in tal caso lo si utilizza per l'inserimento del volto dell'utente
-- Quindi si lancia lo script di generazione; questo provvederà a mettere l'immagine di output nella folder data/outputs dandogli un nome generato casualmente (con un codice di 8 cire); tale codice è restituito alla vista che poi termina comunicandolo all'utente; l'utente potrà accedere in modo statico attraverso una request al server tramite un'url con la seguente struttura:
+- Si controlla se l'eventuale codice LoRA fornito combacia con un modello esistente; in tal caso lo si imposta di effettuare l'inserimento del volto nello script di generazione e si estrae dal database il modello LoRA da utilizzare
+- Quindi si lancia lo script di generazione; questo provvederà a mettere l'immagine di output nella folder data/outputs dandogli un nome generato casualmente (con un codice di 8 cire); tale codice è restituito alla vista che poi termina comunicandolo all'utente; l'utente potrà accedere all'output in modo statico utilizzando una request al server all'url dato dalla seguente struttura:
   
 &emsp;&emsp;&emsp;&emsp; http://server_address:port/data/outputs/codice
 
