@@ -135,7 +135,7 @@ In termini di comandi e risorse, tutto ciò viene implementanto nei seguenti pas
 
   &emsp;&emsp;&emsp;&emsp;pipe = StableDiffusion*Pipeline.from_pretrained("model_repository",...)
 
-  Alla primca call eseguono il download del modello specificato prendendolo dai repository di HuggingFace [3] e lo memorizzano nella cache di sistema; quindi provvedono a caricarlo in RAM. Nelle successive chiamate, per uno stesso modello, questo è caricato in RAM raccogliendolo direttamente dalla cache di sistema; in corrispondenza di tali chiamate cè un elevato utilizzo del disco che non ha in generale causato eccessivi rallentamenti; in un caso specifico, quando quando l'utilizzo del disco era associato a poca RAM disponibile, è stato riscontrato un rallentamento eccessivo che ha fatto da bottleneck per il processo di generazione.
+  Alla prima call eseguono il download del modello specificato prendendolo dai repository di HuggingFace [3] e lo memorizzano nella cache di sistema; quindi provvedono a caricarlo in RAM. Nelle successive chiamate, per uno stesso modello, questo è caricato in RAM raccogliendolo direttamente dalla cache di sistema; in corrispondenza di tali chiamate cè un elevato utilizzo del disco che non ha in generale causato eccessivi rallentamenti; in un caso specifico, quando quando l'utilizzo del disco era associato a poca RAM disponibile, è stato riscontrato un rallentamento eccessivo che ha fatto da bottleneck per il processo di generazione.
 
   La specifica dell'opzione torch_dtype=torch.float16 negli argomenti di questa funzione specifica il tipo di variabile in cui memorizzare i pesi del modello. Di default è utilizzato un float32; nel caso venga specificato si può invece dimezzare la richiesta di spazio utilizzando dei float16; questo impatta enormemente la velocità di esecuzione, specie nelle GPU low end
   
@@ -180,7 +180,7 @@ Per fare il merge tuttavia, tale script deve caricare in RAM (e successivamente 
 
 (Per la ricerca dietro alla scelta di questa struttura di generazione, vedere la tesi)
 
-Conviene specificare che ad ogni step le immagini intermedie generate vengono salvate temporaneamente; queste sono collocate dentro tmp_data, all'interno di una folder che ha come nome il codice prodotto a inizio generazione. All'interno di tale folder viene inoltre temporaneamente salvato anche il modello prodotto dallo step 6. / 
+Conviene specificare che ad ogni step le immagini intermedie generate vengono salvate temporaneamente sul disco; queste sono collocate dentro tmp_data, all'interno di una folder che ha come nome il codice prodotto a inizio generazione. All'interno di tale folder viene inoltre temporaneamente salvato anche il modello prodotto dallo step 6. / 
 Tale folder è eliminata a termine della generazione e l'immagine di output finale è memorizzata nella folder data/outputs con nome uguale al precedente codice.
 
 ### Profiling dello script di generazione
@@ -197,38 +197,36 @@ I punti A, B e C vengono ripetuti per ciascuno degli step 2, 3, 4, 5 e 6 ma con 
 
 Gli step 2, 3, 4, 5 hanno grossomodo la stessa performance; per ciascuno, nel sistema di riferimento, si ha:
 
-- A: Una volta che i rispettivi modelli sono in Cache, la lettura e il setup della pipeline impiega dai 10 ai 30 secondi e raggiunge valori di RAM che oscillano tra i 3GB ai 5 GB;
-- B: Una volta che l'inferenza è iniziata, il la generazione impiega generalmente dai 40 ai 60 secondi; a questo punto l'elaborazione è sulla GPU che raggiunge l'uso di tutti e 6 i GB di RAM
+- A: Una volta che i rispettivi modelli sono in Cache, la lettura e il setup della pipeline impiega dai 40 ai 60 secondi e raggiunge valori di RAM che oscillano tra i 3GB ai 5 GB;
+- B: Una volta che l'inferenza è iniziata, la generazione impiega generalmente dai 40 ai 60 secondi; a questo punto l'elaborazione è sulla GPU che raggiunge l'uso di tutti e 6 i GB di memoria dedicata
 - C: Al termine della generazione di una immagine intermedia è impiegato dai 10 ai 20 secondi prima di passare al punto A dello step successivo; in questa fase l'utilizzo della RAM si aggira sempre attorno ai 3GB-5GB
 
 Lo step 6 è invece quello più critico per i seguenti motivi:
-1. A differenza degli altri step il modello da utilizzare va creato (ottenuto combinando il modello "runwayml/stable-diffusion-inpainting" con il LoRA dell'utente), memorizzato sul disco e ricaricato (come specificato in precedenza). 
-2. Si fa uso di una risoluzione più alta dell'immagine generata: infatti con una risoluzione bassa l'algoritmo di generazione distorge i tratti del volto generato; questa problematica è arginata utilizzando un LoRA addestrato su immagini che contengono diverse risoluzioni del volto dell'utente.
+1. A differenza degli altri step il modello da utilizzare va creato (ottenuto combinando il modello "runwayml/stable-diffusion-inpainting" con il LoRA dell'utente), memorizzato sul disco e quindi ricaricato (come specificato in precedenza). 
+2. Si fa uso di una risoluzione più alta dell'immagine generata: infatti con una risoluzione bassa l'algoritmo di generazione distorge i tratti del volto generato; questa problematica è arginata utilizzando un LoRA addestrato su immagini che contengono diverse risoluzioni del volto dell'utente ma in generale questo step necessita di una risoluzione maggiore rispetto ai precedenti.
 
-  Tuttavia è l'utente a selezionare le immagini e non si può sempre fare affidamento a questa condizione; se il modello è addestrato su immagini in cui il volto è esteso su uno stesso numero di pixel, questo è incentivato a legare il concetto del volto a tale specifica dimensione. 
+  Essendo l'utente a selezionare le immagini non si può sempre fare affidamento ad un training appropiato; se il modello è addestrato su immagini in cui il volto è esteso su uno stesso numero di pixel, questo è incentivato a legare il concetto del volto a tale specifica dimensione. 
   
   Se ad esempio le immagini di training sono tutte addestrate su dei primi piani 1980x1080, quando poi il modello è utilizzato per generare il volto di una persona inquadrata che appare per intero (da testa a piedi) in una immagine 512x512, dove quindi il volto ricoprirà un'area di circa 50x50 pixel, il modello è incapace di sintetizzare il volto su tale dimensione ristretta. 
 
-(l'idea intuitiva dietro a questo problema è che il modello, addestrato con tutti primi piani, lega la dimensione in pixel al concetto del volto; se invece si utilizza immagini con differenti dimensioni del volto allora il modello ne apprende le proporzioni: il concetto del volto diventa legato alle proporzioni piuttosto che alle specifiche dimensioni in pixel; di conseguenza la generazione è capace di sintetizzarlo a diverse risoluzioni)
+(Presuppongo che l'idea intuitiva dietro a questo problema è che un modello LoRA, addestrato con tutti primi piani, lega la dimensione in pixel al concetto del volto; se invece si utilizza immagini con differenti dimensioni del volto allora il modello ne apprende le proporzioni: il concetto del volto diventa legato alle proporzioni piuttosto che alle specifiche dimensioni in pixel; di conseguenza la generazione è capace di sintetizzarlo a diverse risoluzioni)
 
-In generale, durante i test e il profiling della generazione, è nello step 6 che si presentava maggior rischio che il container docker si chiudesse con errore 247 ( legato ad una richiesta di memoria maggiore a quella fornita) e che ha richiesto una aggiunta di RAM dedicata.
+In generale, durante i test e il profiling della generazione, è nello step 6 che si presentava maggior rischio che il container docker si chiudesse con errore 247 ( legato ad una richiesta di memoria maggiore a quella fornita) e ciò ha richiesto una aggiunta preventiva di RAM ( 9GB sono sufficienti ).
 
 Tornando al profiling del punto 6 dunque si osserva:
 
 - Per il merging del modello "runwayml/stable-diffusion-inpainting" con il LoRA:
   - Circa 10 secondi per caricare il modello "runwayml/stable-diffusion-inpainting" nella pipeline
-  - Circa 30 secondi per fare il merge
-  - Circa 60 secondi per salvare sul disco il modello creato
+  - Circa 60 secondi per fare il merge
+  - Circa 120 secondi per salvare sul disco il modello creato
   In questa fase la RAM utilizzata raggiunge picchi di 7-8 GB e anche l'utilizzo del disco è molto elevato ( per via del salvataggio ) 
 - Per la generazione
-  - Circa 100 secondi per l'avvio dell'inferenza
-  - Circa 4 minuti per completare l'inferenza con la risoluzione dell'immagine di output 1200x1200; qui l'utilizzo della ram scende e si mantiene attorno ai 5 GB.
-
-    Il tempo per questo passaggio è drasticamente ridotto se si riduce la risoluzione di output (al costo della qualità dell'immagine finale)
-    
+  - Circa 120 secondi per l'avvio dell'inferenza
+  - Circa 4 minuti per completare l'inferenza con la risoluzione dell'immagine di output 1200x1200; qui l'utilizzo della ram scende e si mantiene attorno ai 5 GB.  
   - Circa 2 minuti a termine dell'inferenza con picchi di ram fino a 8 GB
+Il tempo per quest'ultimo step di generazione può essere drasticalmente ridotto, fino a renderlo in linea con quello degli altri step, semplicemente abbassando la risoluzione dell'immagine in output; per fare ciò basta cambiare i parametri dell'ultima chiamata a pipe(...) nello script di generazione.
  
-### Risultato riassuntivo
+### SUMMARY
 
 In generale la generazione di un'immagine, nel sistema di riferimento, richiede dai 10 ai 15 minuti; tuttavia i bottleneck principali sono l'avvio della pipeline piuttosto che l'inferenza stessa: sommando i tempi di inferenza dei vari step di media è speso 6 minuti complessivi, quantità che può essere drasticalmente ridotta riducendo la risoluzione dell'ultimo step, quello che poi ha di fatto i tempi di inferenza più lunghi.
 
