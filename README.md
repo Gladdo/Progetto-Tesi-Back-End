@@ -206,9 +206,13 @@ In generale la generazione di un'immagine, nel sistema di riferimento, richiede 
 
 In relazione al tempo di setup della pipeline è invece necessario fare la seguente osservazione: nel caso del sistema di riferimento si ha a disposizone una RAM contenuta e diventa dunque necessario alternare la presenza dei vari modelli in esecuzione; in una situazione di deploy, su macchine adeguate, ciascuno dei vari step può essere implementato su diversi hardware e ciascuna pipeline può rimanere costantemente pronta all'inferenza, riducendo teoricamente tempi in modo netto.
 
-### Osservazione: generator.py vs generator_classic.py e osservazione con eventuale deploy
+### Osservazione: generator.py vs generator_classic.py
 
+Nonostante implementano gli stessi step computazionali, la necessità di generator.py rispetto a generator_classic.py nasce dal seguente problema riscontrato: quando si alterna i modelli di generazione in RAM la libreria diffusers produce dei Memory Leak; questi, gradualmente su diverse generazioni, rischiano di farla straripare.
 
+Per ovviare a tale problema, che è possibile ancora riscontrare utilizzando lo script generator_classic.py, ho optato per la seguente strategia: gli step di generazione, dove carico i modelli in RAM, sono tutti eseguiti utilizzando dei subprocess; i vari step si comunicano le immagini semplicemente salvandole sul disco.
+
+In questo modo, a prescindere dalle problematiche (inarginabili) di memory leaks inerenti alla libreria diffusers, terminato uno step di generazione viene chiuso il subproces all'interno del quale era stato caricato il modello in RAM; di conseguenza tutta la sua RAM è liberata assieme ad eventuali problemi di leak.
 
 ## Resources Link
 
