@@ -127,7 +127,7 @@ Prima di passare all'implementazione dello script vediamo gli step computazional
  - Steps di inferenza della pipeline di generazione
  - Conversione dell'immagine da latent-space a immagine vera e propria (Decoder VAE)
 
-In termini di comandi e risorse, tutto ciò viene implementanto nei seguenti passi:
+In termini di comandi e risorse, tutto ciò viene implementanto nei seguenti passi forniti dalla libreria diffusers:
 
 - Chiamate alla funzione **from_petrained**: (Download del modello e setup della pipeline)
 
