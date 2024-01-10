@@ -138,7 +138,7 @@ In termini di comandi e risorse, tutto ciò viene implementanto nei seguenti pas
 
 ### Esecuzione dello script
 
-Esistono due script per la generazione, generator.py e generator_classic.py; il primo implementa gli stessi identici passi del secondo apportando delle ottimizzazioni per il motivo spiegato a breve, mentre il secondo è una descrizione sequenziale più elengate degli stessi passi computazionali; per questo motivo, per comprendere meglio ciò che viene eseguito, si fa riferimento a generator_classic.py. 
+Esistono due script per la generazione, generator.py e generator_classic.py; il primo implementa gli stessi identici passi del secondo apportando delle ottimizzazioni per il motivo spiegato a breve, mentre il secondo è una descrizione sequenziale, più elengate, degli stessi passi computazionali; per questo motivo, per comprendere meglio ciò che viene eseguito, si fa riferimento a generator_classic.py. 
 
 L'esecuzione dell'intero script si può riassumere nel seguente flow:
 
@@ -150,15 +150,26 @@ Grazie alla ControlNet è possibile combinare questi due passaggi in un'unico st
 3. Si effettua uno step di inpaiting sul risultato della precedente operazione per aumentare i dettagli dell soggetto inpaintato; questo step lavora SOLO su un'area specifica dell'immagine, quella definita dalla maschera associata alla posa (ed in cui sarà sicuramente contenuto il soggetto generato precedentemente); si utilizza il modello "dreamlike-art/dreamlike-photoreal-2.0"
 4. Si effettua dinuovo il punto 3
 5. Si effettua adesso uno step di Img2Img che prende il risultato precedente ed effettua un'omogenizzazione della qualità dell'immagine
-6. Se è stato scelto un LoRA, si fa un'ultimo step di inpainting per l'inserimento del volto del soggetto; anche in questo step di inpainting si va ad agire su una specifica maschera (in cui sarà sicuramente contenuto il volto del soggetto data la struttura di generazione)
+6. Se è stato scelto un LoRA, si fa un'ultimo step di inpainting per l'inserimento del volto del soggetto; anche in questo step di inpainting si va ad agire su una specifica maschera (in cui sarà sicuramente contenuto il volto del soggetto data la struttura di generazione); in questa fase è tuttavia presente un'ulteriore passaggio:
+  6a. Si utilizza uno script della libreria diffusers (convert_lora_safetensor_to_diffusers) per combinare il modello LoRA dell'utente con il modello base "runwayml/stable-diffusion-inpainting".
+  6b. Lo script per la combinazione carica in RAM e in GPU il modello "runwayml/stable-diffusion-inpainting" e lo combina con il modello LoRA inserendolo in un'oggetto StableDiffusionPipeline piuttosto che StableDiffusionInpaitingPipeline; dato che a noi serve il secondo tipo di pipeline (dato che il primo non consente l'inpaiting) diventa necessario salvare sul disco il modello e successivamente ricaricarlo col tipo appropiato di pipeline (purtroppo non ho trovato alternative a questo meccanismo utilizzando la libreria diffusers).
 
-(Per la ricerca dietro alla scelta di questa struttura, vedere la tesi)
+(Per la ricerca dietro alla scelta di questa struttura di generazione, vedere la tesi)
 
 ### Profiling dei vari step
 
-### Alternativa in deploy
+Come accennato precedentemente, i punti critici sono nei momenti in cui:
 
-### Profiling
+A. Si carica il modello dal sistema per la lavorazione dello specifico step e lo si setuppa
+B. Si fa inferenza
+C. Si genera l'immagine di lavorazione intermedia da passare allo step successivo della pipeline
+
+I punti A, B e C vengono ripetuti per ciascuno degli step 2, 3, 4, 5 e 6.
+
+In particolare ciò che genera il picco massimo di utilizzo della RAM è il punto A
+
+
+### Alternativa in deploy
 
 Resource peaks: al caricamento dei modelli e alla conversione delle immagini al termine della generazione
 
