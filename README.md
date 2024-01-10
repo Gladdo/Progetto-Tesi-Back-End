@@ -14,9 +14,9 @@ I tempi e le considerazioni fatte sono in relazione alle seguenti risorse:
 - Drive: HDD (no SSD were available)
 - CPU Intel Core i5-8600k @ 3.60GHz
 
-L'esecuzione su container Docker richiede che al container venga fornito almeno 9GB di RAM (l'utilizzo medio della RAM è inferiore ma ci sono dei peak sulla richiesta durante alcune fasi come specificato successivamente) 
+L'esecuzione su container Docker richiede che al container venga fornito almeno 9GB di RAM (l'utilizzo medio della RAM è inferiore ma ci sono dei peak sulla richiesta di risorse durante alcune fasi della generazione, come specificato successivamente) 
 
-### Aumentare la RAM fornita ad un container docker ( su windows con WSL ):
+### Aumentare la RAM fornita ad un container docker ( su windows con WSL2 ):
 
 Nella folder C:\users\<user_name> creare un file .wslconfig con al suo interno le seguenti righe:
 
