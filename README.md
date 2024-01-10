@@ -2,7 +2,7 @@
 
 ## Tramite Compose
 
-## Manualmente tramite Dockerfile
+## Tramite Dockerfile manualmente
 
 # PROFILING
 
