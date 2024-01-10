@@ -162,19 +162,19 @@ Ad ogni step viene salvato le immagini generate dentro tmp_data in una folder ch
 
 Come accennato precedentemente, i punti critici sono nei momenti in cui:
 
-&emsp;&emsp;A. Si carica il modello dal sistema per la lavorazione dello specifico step e lo si setuppa
+&emsp;&emsp;A. Si carica il modello per la lavorazione dello specifico step e se ne fa il setup
 
 &emsp;&emsp;B. Si fa inferenza
 
-&emsp;&emsp;C. Si genera l'immagine di lavorazione intermedia da passare allo step successivo della pipeline
+&emsp;&emsp;C. Si genera l'immagine di lavorazione intermedia, si smonta la pipeline corrente e si passa allo step successivo
 
 I punti A, B e C vengono ripetuti per ciascuno degli step 2, 3, 4, 5 e 6 ma con modalità differenti:
 
 Gli step 2, 3, 4, 5 hanno grossomodo la stessa performance; per ciascuno, nel sistema di riferimento, si ha:
 
-- A: Una volta che i rispettivi modelli sono in Cache, il punto A impiega circa 10 secondi e raggiunge valori di RAM che oscillano tra i 3GB ai 5 GB
-- B: Una volta che l'inferenza è iniziata, il punto B impiega generalmente dai 40 ai 60 secondi; a questo punto l'elaborazione è sulla GPU che raggiunge l'uso di tutti e 6 i GB di RAM
-- A termine della generazione è impiegato dai 10 ai 20 secondi prima dell'inizio della successivo step con un'utilizzo della RAM sempre tra i 3GB e i 5GB
+- A: Una volta che i rispettivi modelli sono in Cache, il setup della pipeline di generazione impiega circa 10 secondi e raggiunge valori di RAM che oscillano tra i 3GB ai 5 GB
+- B: Una volta che l'inferenza è iniziata, il la generazione impiega generalmente dai 40 ai 60 secondi; a questo punto l'elaborazione è sulla GPU che raggiunge l'uso di tutti e 6 i GB di RAM
+- C: A termine della generazione è impiegato dai 10 ai 20 secondi prima dell'inizio del punto A del successivo step; in questa fase l'utilizzo della RAM si aggira sempre attorno ai 3GB-5GB
 
 Lo step 6 è invece quello più critico per i seguenti motivi:
 1. A differenza degli altri step il modello da utilizzare va creato (ottenuto combinando il modello "runwayml/stable-diffusion-inpainting" con il LoRA dell'utente), memorizzato sul disco e ricaricato (come specificato in precedenza). 
