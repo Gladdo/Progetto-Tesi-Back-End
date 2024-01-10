@@ -197,7 +197,10 @@ Tornando al profiling del punto 6 dunque si osserva:
   In questa fase la RAM utilizzata raggiunge picchi di 7-8 GB e anche l'utilizzo del disco è molto elevato ( per via del salvataggio ) 
 - Per la generazione
   - Circa 100 secondi per l'avvio dell'inferenza
-  - Circa 4 minuti per completare l'inferenza con la risoluzione dell'immagine di output 1200x1200; qui l'utilizzo della ram scende e si mantiene attorno ai 5 GB
+  - Circa 4 minuti per completare l'inferenza con la risoluzione dell'immagine di output 1200x1200; qui l'utilizzo della ram scende e si mantiene attorno ai 5 GB.
+
+    Il tempo per questo passaggio è drasticamente ridotto se si riduce la risoluzione di output (a scapito della qualità dell'immagine finale)
+    
   - Circa 2 minuti a termine dell'inferenza con picchi di ram fino a 8 GB
  
 ### Risultato riassuntivo
@@ -213,6 +216,15 @@ Nonostante implementano gli stessi step computazionali, la necessità di generat
 Per ovviare a tale problema, che è possibile ancora riscontrare utilizzando lo script generator_classic.py, ho optato per la seguente strategia: gli step di generazione, dove carico i modelli in RAM, sono tutti eseguiti utilizzando dei subprocess; i vari step si comunicano le immagini semplicemente salvandole sul disco.
 
 In questo modo, a prescindere dalle problematiche (inarginabili) di memory leaks inerenti alla libreria diffusers, terminato uno step di generazione viene chiuso il subproces all'interno del quale era stato caricato il modello in RAM; di conseguenza tutta la sua RAM è liberata assieme ad eventuali problemi di leak.
+
+## TO-DO:
+
+Un eventuale sviluppo può essere continuato dai seguenti task:
+
+- Alla rimozione delle entries delle table delle azioni vengono eliminati anche le risorse associate a tale entry; questo non è ancora vero per le entries e le risorse delle PoiImages
+- Cleanup delle risorse quando training o generazione terminano bruscamente: ad ora le risorse solo rimosse solo a fine dei relativi script e un'eventuale interruzione le dimentica sul sistema (ad esempio file in tmp_data o i file in input e output in traning-app)
+- Eventualmente, su hardware adeguato, far si che lo script di generazione non debba chiudere e ricaricare le pipeline ogni volta.
+- 
 
 ## Resources Link
 
