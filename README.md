@@ -14,7 +14,22 @@ I tempi e le considerazioni fatte sono in relazione alle seguenti risorse:
 - Drive: HDD (no SSD were available)
 - CPU Intel Core i5-8600k @ 3.60GHz
 
-## Training LoRA
+L'esecuzione su container Docker richiede che al container venga fornito almeno 9GB di RAM (l'utilizzo medio della RAM è inferiore ma ci sono dei peak sulla richiesta durante alcune fasi come specificato successivamente) 
+
+### Aumentare la RAM fornita ad un container docker ( su windows con WSL ):
+
+Nella folder C:\users\<user_name> creare un file .wslconfig con al suo interno le seguenti righe:
+
+```
+[wsl2]
+memory=9GB
+```
+
+NB: Fare attenzione a non cedere troppa RAM: oltre un certo limite si vincola il SO a rallentare e questo rallenta di conseguenza anche l'esecuzione del container. 
+
+
+
+## TRAINING LORA
 
 ### Flow di esecuzione
 
@@ -43,7 +58,11 @@ NB: SE SI MODIFICA QUESTO SCRIPT SU WINDOWS, ASSICURARSI CHE SUCCESSIVAMENTE SIA
 
 ### Profiling
 
-I tempi medi di esecuzione del training nel sistema di riferimento vanno dai 60 ai 90 minuti.
+I tempi medi di esecuzione del training nel sistema di riferimento vanno dai 60 ai 90 minuti con uso delle risorse stabile (non cè nessun picco sulla richiesta di risorse)
+
+## Generazione
+
+Resource peaks: al caricamento dei modelli e alla conversione delle immagini al termine della generazione
 
 # Resources Link
 
