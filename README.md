@@ -176,11 +176,11 @@ Grazie alla ControlNet è possibile combinare questi due passaggi in un'unico st
 6. Se è stato scelto un LoRA, si fa un'ultimo step di inpainting per l'inserimento del volto del soggetto; anche in questo step di inpainting si va ad agire su una specifica maschera (in cui sarà sicuramente contenuto il volto del soggetto data la struttura di generazione). Tuttavia in questa fase è presente un'ulteriore passaggio: per utilizzare il modello lora bisogna combinarlo con un modello pre-esistente; tramite la libreria diffusers questo si ottiene nel seguente modo: \
 \
 Si utilizza uno script della libreria diffusers (convert_lora_safetensor_to_diffusers) per combinare il modello LoRA dell'utente con il modello base "runwayml/stable-diffusion-inpainting". \
-Per fare il merge tuttavia, tale script deve caricare in RAM (e successivamente in GPU) sia il modello "runwayml/stable-diffusion-inpainting" che il modello LoRA; per fare ciò lo inscerisce in un'oggetto StableDiffusionPipeline piuttosto che StableDiffusionInpaitingPipeline; dato che a noi serve il secondo tipo di pipeline (perchè è l'unico a consentire consente l'inpaiting) diventa necessario salvare sul disco il modello ottenuto dal merge e successivamente ricaricarlo col tipo appropiato di pipeline (purtroppo utilizzando la libreria diffusers non ho trovato alternative a questo meccanismo; se uno prova a modificare lo script di merge imponendo di caricare subito il modello in un'oggetto di tipo StableDiffusionInpatiningPipeline, viene generato un'errore).
+Per fare il merge tuttavia, tale script deve caricare in RAM (e successivamente in GPU) sia il modello "runwayml/stable-diffusion-inpainting" che il modello LoRA; per fare ciò lo inscerisce in un'oggetto StableDiffusionPipeline piuttosto che StableDiffusionInpaitingPipeline; dato che a noi serve il secondo tipo di pipeline (perchè è l'unico a consentire consente l'inpaiting) diventa necessario salvare sul disco il modello ottenuto dal merge e successivamente ricaricarlo col tipo appropiato di pipeline (purtroppo utilizzando la libreria diffusers non ho trovato alternative a questo meccanismo; se uno prova a modificare lo script di merge imponendo di caricare il modello subito all'interno di un'oggetto StableDiffusionInpatiningPipeline, viene generato un'errore; questo avrebbe potenzialmente evitato la scrittura su disco e la successiva rilettura).
 
 (Per la ricerca dietro alla scelta di questa struttura di generazione, vedere la tesi)
 
-Conviene specificare che ad ogni step le immagini intermedie generate vengono salvate temporaneamente; queste sono collocate dentro tmp_data, all'interno di una folder che ha come nome il codice prodotto a inizio generazione. All'interno di tale folder vieneinoltre salvato temporaneamente anche il modello prodotto dallo step 6. / 
+Conviene specificare che ad ogni step le immagini intermedie generate vengono salvate temporaneamente; queste sono collocate dentro tmp_data, all'interno di una folder che ha come nome il codice prodotto a inizio generazione. All'interno di tale folder viene inoltre temporaneamente salvato anche il modello prodotto dallo step 6. / 
 Tale folder è eliminata a termine della generazione e l'immagine di output finale è memorizzata nella folder data/outputs con nome uguale al precedente codice.
 
 ### Profiling dello script di generazione
@@ -199,7 +199,7 @@ Gli step 2, 3, 4, 5 hanno grossomodo la stessa performance; per ciascuno, nel si
 
 - A: Una volta che i rispettivi modelli sono in Cache, la lettura e il setup della pipeline impiega dai 10 ai 30 secondi e raggiunge valori di RAM che oscillano tra i 3GB ai 5 GB;
 - B: Una volta che l'inferenza è iniziata, il la generazione impiega generalmente dai 40 ai 60 secondi; a questo punto l'elaborazione è sulla GPU che raggiunge l'uso di tutti e 6 i GB di RAM
-- C: A termine della generazione è impiegato dai 10 ai 20 secondi prima dell'inizio del punto A del successivo step; in questa fase l'utilizzo della RAM si aggira sempre attorno ai 3GB-5GB
+- C: Al termine della generazione di una immagine intermedia è impiegato dai 10 ai 20 secondi prima di passare al punto A dello step successivo; in questa fase l'utilizzo della RAM si aggira sempre attorno ai 3GB-5GB
 
 Lo step 6 è invece quello più critico per i seguenti motivi:
 1. A differenza degli altri step il modello da utilizzare va creato (ottenuto combinando il modello "runwayml/stable-diffusion-inpainting" con il LoRA dell'utente), memorizzato sul disco e ricaricato (come specificato in precedenza). 
