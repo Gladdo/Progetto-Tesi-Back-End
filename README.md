@@ -172,8 +172,8 @@ I punti A, B e C vengono ripetuti per ciascuno degli step 2, 3, 4, 5 e 6 ma con 
 
 Gli step 2, 3, 4, 5 hanno grossomodo la stessa performance; per ciascuno, nel sistema di riferimento, si ha:
 
-- Il punto A una volta che i rispettivi modelli sono in Cache, impiega circa 10 secondi e raggiunge valori di RAM che oscillano tra i 3GB ai 5 GB
-- Una volta che l'inferenza è iniziata, il punto B impiega generalmente dai 40 ai 60 secondi; a questo punto l'elaborazione è sulla GPU che raggiunge l'uso di tutti e 6 i GB di RAM
+- A: Una volta che i rispettivi modelli sono in Cache, il punto A impiega circa 10 secondi e raggiunge valori di RAM che oscillano tra i 3GB ai 5 GB
+- B: Una volta che l'inferenza è iniziata, il punto B impiega generalmente dai 40 ai 60 secondi; a questo punto l'elaborazione è sulla GPU che raggiunge l'uso di tutti e 6 i GB di RAM
 - A termine della generazione è impiegato dai 10 ai 20 secondi prima dell'inizio della successivo step con un'utilizzo della RAM sempre tra i 3GB e i 5GB
 
 Lo step 6 è invece quello più critico per i seguenti motivi:
@@ -197,12 +197,18 @@ Tornando al profiling del punto 6 dunque si osserva:
   In questa fase la RAM utilizzata raggiunge picchi di 7-8 GB e anche l'utilizzo del disco è molto elevato ( per via del salvataggio ) 
 - Per la generazione
   - Circa 100 secondi per l'avvio dell'inferenza
-  - Circa 5 minuti per completare l'inferenza con la risoluzione dell'immagine di output 1200x1200; qui l'utilizzo della ram scende e si mantiene attorno ai 5 GB
+  - Circa 4 minuti per completare l'inferenza con la risoluzione dell'immagine di output 1200x1200; qui l'utilizzo della ram scende e si mantiene attorno ai 5 GB
   - Circa 2 minuti a termine dell'inferenza con picchi di ram fino a 8 GB
  
+### Risultato riassuntivo
+
+In generale la generazione di un'immagine, nel sistema di riferimento, richiede dai 10 ai 15 minuti; tuttavia i bottleneck principali sono l'avvio della pipeline piuttosto che l'inferenza stessa: sommando i tempi di inferenza dei vari step di media è speso 6 minuti complessivi, quantità che può essere drasticalmente ridotta riducendo la risoluzione dell'ultimo step, quello che poi ha di fatto i tempi di inferenza più lunghi.
+
+In relazione al tempo di setup della pipeline è invece necessario fare la seguente osservazione: nel caso del sistema di riferimento si ha a disposizone una RAM contenuta e diventa dunque necessario alternare la presenza dei vari modelli in esecuzione; in una situazione di deploy, su macchine adeguate, ciascuno dei vari step può essere implementato su diversi hardware e ciascuna pipeline può rimanere costantemente pronta all'inferenza, riducendo teoricamente tempi in modo netto.
+
 ### Osservazione: generator.py vs generator_classic.py e osservazione con eventuale deploy
 
-Resource peaks: al caricamento dei modelli e alla conversione delle immagini al termine della generazione
+
 
 ## Resources Link
 
