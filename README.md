@@ -135,7 +135,7 @@ In termini di comandi e risorse, tutto ciò viene implementanto nei seguenti pas
 
   &emsp;&emsp;&emsp;&emsp;pipe = StableDiffusion*Pipeline.from_pretrained("model_repository",...)
 
-  Al primo avvio eseguono il download del modello specificato prendendolo dai repository di HuggingFace [3] e lo memorizzano nella cache di sistema; quindi provvedono a caricarlo in RAM. Nelle successive chiamate, per uno stesso modello, questo è caricato in RAM raccogliendolo direttamente dalla cache di sistema; in corrispondenza di tali chiamate cè un elevato utilizzo del disco che può potenzialmente fare da bottleneck per il processo di generazione (specie nel caso di un HDD).
+  Alla primca call eseguono il download del modello specificato prendendolo dai repository di HuggingFace [3] e lo memorizzano nella cache di sistema; quindi provvedono a caricarlo in RAM. Nelle successive chiamate, per uno stesso modello, questo è caricato in RAM raccogliendolo direttamente dalla cache di sistema; in corrispondenza di tali chiamate cè un elevato utilizzo del disco che non ha in generale causato eccessivi rallentamenti; in un caso specifico, quando quando l'utilizzo del disco era associato a poca RAM disponibile, è stato riscontrato un rallentamento eccessivo che ha fatto da bottleneck per il processo di generazione.
 
   La specifica dell'opzione torch_dtype=torch.float16 negli argomenti di questa funzione specifica il tipo di variabile in cui memorizzare i pesi del modello. Di default è utilizzato un float32; nel caso venga specificato si può invece dimezzare la richiesta di spazio utilizzando dei float16; questo impatta enormemente la velocità di esecuzione, specie nelle GPU low end
   
@@ -183,7 +183,7 @@ Per fare il merge tuttavia, tale script deve caricare in RAM (e successivamente 
 Conviene specificare che ad ogni step le immagini intermedie generate vengono salvate temporaneamente; queste sono collocate dentro tmp_data, all'interno di una folder che ha come nome il codice prodotto a inizio generazione. All'interno di tale folder vieneinoltre salvato temporaneamente anche il modello prodotto dallo step 6. / 
 Tale folder è eliminata a termine della generazione e l'immagine di output finale è memorizzata nella folder data/outputs con nome uguale al precedente codice.
 
-### Profiling dei vari step
+### Profiling dello script di generazione
 
 Come accennato precedentemente, i punti critici sono nei momenti in cui:
 
@@ -191,13 +191,13 @@ Come accennato precedentemente, i punti critici sono nei momenti in cui:
 
 &emsp;&emsp;B. Si fa inferenza
 
-&emsp;&emsp;C. Si genera l'immagine di lavorazione intermedia, si smonta la pipeline corrente e si passa allo step successivo
+&emsp;&emsp;C. Si estrae l'immagine intermedia dalla GPU, si smonta la pipeline corrente e si passa allo step successivo
 
 I punti A, B e C vengono ripetuti per ciascuno degli step 2, 3, 4, 5 e 6 ma con modalità differenti:
 
 Gli step 2, 3, 4, 5 hanno grossomodo la stessa performance; per ciascuno, nel sistema di riferimento, si ha:
 
-- A: Una volta che i rispettivi modelli sono in Cache, il setup della pipeline di generazione impiega circa 10 secondi e raggiunge valori di RAM che oscillano tra i 3GB ai 5 GB
+- A: Una volta che i rispettivi modelli sono in Cache, la lettura e il setup della pipeline impiega dai 10 ai 30 secondi e raggiunge valori di RAM che oscillano tra i 3GB ai 5 GB;
 - B: Una volta che l'inferenza è iniziata, il la generazione impiega generalmente dai 40 ai 60 secondi; a questo punto l'elaborazione è sulla GPU che raggiunge l'uso di tutti e 6 i GB di RAM
 - C: A termine della generazione è impiegato dai 10 ai 20 secondi prima dell'inizio del punto A del successivo step; in questa fase l'utilizzo della RAM si aggira sempre attorno ai 3GB-5GB
 
