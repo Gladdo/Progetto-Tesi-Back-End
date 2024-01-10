@@ -62,6 +62,39 @@ I tempi medi di esecuzione del training nel sistema di riferimento vanno dai 60 
 
 ### Flow di esecuzione
 
+Per gli istrumenti di inferenza (generazione) è stato fatto uso della libreria diffusers [2].
+
+#### Interfaccia dell'API
+
+Si accede alla generazione di un'immagine attraverso la vista GenerateImage dell'API a cui devono essere forniti i seguenti parametri:
+
+- poi_name: nome del punto d'interesse contenete l'immagine su cui iniziare la generazione del soggetto
+- poi_image: nome dell'immagine di background da cui iniziare la generazione; deve combaciare con il nome di una immagine nel database
+- action_name: nome dell'azione da utilizzare per il soggetto generato; deve combaciare con il nome di un'azione nel database
+- action_shot_type: a che distanza è inserito il soggetto nell'immagine; è necessario fornire uno dei seguenti valori: "CLS", "MES", "FUS" che Rispettivamente indicano: close, medium distance, far.
+- age: deve indicare l'età del soggetto attraverso uno dei seguenti aggettivi: "young", "adult", "old"
+- gender: deve indicare il sesso del soggetto attraverso uno dei seguenti valori: "man", "woman"
+- other_details: deve indicare dettagli sul soggetto; viene inserito nel prompt di generazione con la struttura "wearing" + other_details
+- selected_lora: può contenere o meno un LoRA code; se non contiene nessun codice o un codice errato, semplicemente la generazione avviene senza l'inserimento del soggetto, altrimenti viene eseguito pure quest'ultimo step.
+- dynamic_action_selection: deve indicare true o false; nel primo caso l'action_name scelto viene sovrascritto dalla selezione dinamica della posa fatta dallo script action_picker.py, altrimenti è utilizzata l'action_name scelta dall'utente
+- action_prompt: contiene la descrizione dell'azione che viene eventualmente utilizzata dallo script action_picker.py per la selezione dinamica.
+
+#### Esecuzione
+
+Impostati i precedenti parametri, la vistaprocede nel seguente modo: 
+
+- Viene selezionata l'immagine di background estrendo dal db l'oggetto poi_image_obj: questo contiene l'immagine da utilizzare e la descrizione di tale immagine (che viene utilizzata nella costruzione del prompt)
+- Viene selezionata l'azione da utilizzare, tramite la scelta dinamica o manuale dell'utente, estraendo dal db l'oggetto action_obj: questo specifica il nome e la descrizione dell'azione selezionata
+- A questo punto si prende tutte le immagini relative all'azione selezionata filtrando la table delle immagini con l'action_obj appena scelto; si ottiene una lista di immagini relative ad una stessa azione ma con differenti distanze del soggetto
+- Si utilizza l'action_shot_type per scegliere definitivamente quali immagini dell'azione utilizzare e si mettono nell'oggetto action_image_obj: questo contiene
+  - L'immagine del manichino utilizzato per guidare la generazione della posa
+  - L'immagine per la maschera di inserimento della posa
+  - L'immagine per la maschera di inserimento del volto
+- Si controlla se l'eventuale codice LoRA fornito combacia con un modello esistente; in tal caso lo si utilizza per l'inserimento del volto dell'utente
+- Quindi si lancia lo script di generazione; questo provvederà a mettere l'immagine di output nella folder data/outputs dandogli un nome generato casualmente (con un codice di 8 cire); tale codice è restituito alla vista che poi termina comunicandolo all'utente; l'utente potrà accedere in modo statico attraverso una request al server tramite un'url con la seguente struttura:
+&emsp;&emsp;&emsp;&emsp; server_address/data/outputs/<codice>.
+
+
 ### Profiling
 
 Resource peaks: al caricamento dei modelli e alla conversione delle immagini al termine della generazione
@@ -69,3 +102,4 @@ Resource peaks: al caricamento dei modelli e alla conversione delle immagini al 
 ## Resources Link
 
 [1] Kohya: https://github.com/kohya-ss/sd-scripts
+[2] Diffusers: https://huggingface.co/blog/stable_diffusion
