@@ -224,7 +224,6 @@ Un eventuale sviluppo può essere continuato dai seguenti task:
 - Alla rimozione delle entries delle table delle azioni vengono eliminati anche le risorse associate a tale entry; questo non è ancora vero per le entries e le risorse delle PoiImages
 - Cleanup delle risorse quando training o generazione terminano bruscamente: ad ora le risorse solo rimosse solo a fine dei relativi script e un'eventuale interruzione le dimentica sul sistema (ad esempio file in tmp_data o i file in input e output in traning-app)
 - Eventualmente, su hardware adeguato, far si che lo script di generazione non debba chiudere e ricaricare le pipeline ogni volta.
-- 
 
 ## Resources Link
 
