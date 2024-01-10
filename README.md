@@ -182,9 +182,9 @@ Lo step 6 è invece quello più critico per i seguenti motivi:
 
   Tuttavia è l'utente a selezionare le immagini e non si può sempre fare affidamento a questa condizione; se il modello è addestrato su immagini in cui il volto è esteso su uno stesso numero di pixel, questo è incentivato a legare il concetto del volto a tale specifica dimensione. 
   
-  Se ad esempio le immagini di training sono tutte addestrate su dei primi piani 1980x1080, quando poi il modello è utilizzato per generare il volto su una persona inquadrata per intero in una immagine 512x512, dove il volto ricopre circa 50x50 pixel di tale immagine, il modello è incapace di sintetizzare il volto su tale dimensione ristretta. 
+  Se ad esempio le immagini di training sono tutte addestrate su dei primi piani 1980x1080, quando poi il modello è utilizzato per generare il volto di una persona inquadrata che appare per intero (da testa a piedi) in una immagine 512x512, dove quindi il volto ricoprirà un'area di circa 50x50 pixel, il modello è incapace di sintetizzare il volto su tale dimensione ristretta. 
 
-(l'idea intuitiva dietro a questo problema è che il modello lega la dimensione in pixel al concetto del volto; se invece si utilizza immagini con differenti dimensioni del volto allora il modello ne apprende le proporzioni: il concetto del volto diventa legato alle proporzioni piuttosto che alle specifiche dimensioni in pixel e quindi la generazione è capace di sintetizzarlo a diverse risoluzioni)
+(l'idea intuitiva dietro a questo problema è che il modello, addestrato con tutti primi piani, lega la dimensione in pixel al concetto del volto; se invece si utilizza immagini con differenti dimensioni del volto allora il modello ne apprende le proporzioni: il concetto del volto diventa legato alle proporzioni piuttosto che alle specifiche dimensioni in pixel; di conseguenza la generazione è capace di sintetizzarlo a diverse risoluzioni)
 
 In generale, durante i test e il profiling della generazione, è nello step 6 che si presentava maggior rischio che il container docker si chiudesse con errore 247 ( legato ad una richiesta di memoria maggiore a quella fornita) e che ha richiesto una aggiunta di RAM dedicata.
 
