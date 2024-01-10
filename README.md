@@ -199,7 +199,7 @@ Tornando al profiling del punto 6 dunque si osserva:
   - Circa 100 secondi per l'avvio dell'inferenza
   - Circa 4 minuti per completare l'inferenza con la risoluzione dell'immagine di output 1200x1200; qui l'utilizzo della ram scende e si mantiene attorno ai 5 GB.
 
-    Il tempo per questo passaggio è drasticamente ridotto se si riduce la risoluzione di output (a scapito della qualità dell'immagine finale)
+    Il tempo per questo passaggio è drasticamente ridotto se si riduce la risoluzione di output (al costo della qualità dell'immagine finale)
     
   - Circa 2 minuti a termine dell'inferenza con picchi di ram fino a 8 GB
  
