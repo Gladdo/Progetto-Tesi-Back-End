@@ -122,7 +122,7 @@ Prima di passare all'implementazione dello script vediamo gli step computazional
 
  Ad alto livello, per la generazione di una singola immagine, è necessario eseguire i seguenti step:
 
- - Download del modello da utilizzare
+ - Download del modello da utilizzare e/o caricamento del modello in RAM
  - Setup della pipeline di generazione
  - Steps di inferenza della pipeline di generazione
  - Conversione dell'immagine da latent-space a immagine vera e propria (Decoder VAE)
