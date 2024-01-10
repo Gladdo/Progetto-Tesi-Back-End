@@ -108,7 +108,7 @@ Prima di passare all'implementazione dello script vediamo gli step computazional
 
 In termini di comandi e risorse, tutto ciò viene implementanto nei seguenti passi:
 
-- Chiamate alla funzione from_petrained: (Download del modello e setup della pipeline)
+- Chiamate alla funzione **from_petrained**: (Download del modello e setup della pipeline)
 
   Le chiamate a questa funzione, del tipo:
 
@@ -118,15 +118,15 @@ In termini di comandi e risorse, tutto ciò viene implementanto nei seguenti pas
 
   La specifica dell'opzione torch_dtype=torch.float16 negli argomenti di questa funzione specifica il tipo di tipo di variabile in cui memorizzare i pesi del modello. Di default è utilizzato un float32; nel caso venga specificato si può invece dimezzare la richiesta di spazio utilizzando dei float16; questo impatta enormemente la velocità di esecuzione, specie nelle GPU low end (solo con questa opzione è possibile ridurre il tempo di inferenza di un fattore 10)
 
-- Le chiamate alla funzione pipe.to("cuda"): (setup della pipeline)
+- Chiamate alla funzione **pipe.to("cuda")**: (setup della pipeline)
   
   Queste caricano il modello sulla memoria GPU e la configurano per essere eseguite col modello computazionale CUDA di NVIDIA (https://docs.nvidia.com/deploy/cuda-compatibility/).
 
-- Le chiamate alla funzione: pipe.enable_xformers_memory_efficient_attention() (setup della pipeline)
+- Chiamate alla funzione **pipe.enable_xformers_memory_efficient_attention()**: (setup della pipeline)
 
   Queste chiamate specificano di utilizzare determinati meccanismi di ottimizzazione nell'esecuzione dell'inferenza (per poter usare questa funzione è necessario aver installato il package python xformers nell'ambiente)
 
-- Le chiamate pipe(...): (Inferenza e conversione latent-space -> immagine)
+- Chiamate alla funzione **pipe(...)**: (Inferenza e conversione latent-space -> immagine)
 
   Queste chiamate, del tipo:
 
