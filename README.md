@@ -37,7 +37,7 @@ L'esecuzione su container Docker richiede che al container venga fornito almeno 
 
 ### Aumentare la RAM fornita ad un container docker ( su windows con WSL2 ):
 
-Nella folder C:\users\<user_name> creare un file .wslconfig con al suo interno le seguenti righe:
+Nella folder C:\users\user_name creare un file .wslconfig con al suo interno le seguenti righe:
 
 ```
 [wsl2]
