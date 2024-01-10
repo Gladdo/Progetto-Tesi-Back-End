@@ -79,9 +79,9 @@ Si accede alla generazione di un'immagine attraverso la vista GenerateImage dell
 - dynamic_action_selection: deve indicare true o false; nel primo caso l'action_name scelto viene sovrascritto dalla selezione dinamica della posa fatta dallo script action_picker.py, altrimenti è utilizzata l'action_name scelta dall'utente
 - action_prompt: contiene la descrizione dell'azione che viene eventualmente utilizzata dallo script action_picker.py per la selezione dinamica.
 
-#### Esecuzione
+#### Esecuzione della vista di generazione (GenerateImage in views.py)
 
-Impostati i precedenti parametri, la vistaprocede nel seguente modo: 
+Impostati i precedenti parametri, la vista procede nel seguente modo: 
 
 - Viene selezionata l'immagine di background estrendo dal db l'oggetto poi_image_obj: questo contiene l'immagine da utilizzare e la descrizione di tale immagine (che viene utilizzata nella costruzione del prompt)
 - Viene selezionata l'azione da utilizzare, tramite la scelta dinamica o manuale dell'utente, estraendo dal db l'oggetto action_obj: questo specifica il nome e la descrizione dell'azione selezionata
@@ -93,8 +93,39 @@ Impostati i precedenti parametri, la vistaprocede nel seguente modo:
 - Si controlla se l'eventuale codice LoRA fornito combacia con un modello esistente; in tal caso lo si utilizza per l'inserimento del volto dell'utente
 - Quindi si lancia lo script di generazione; questo provvederà a mettere l'immagine di output nella folder data/outputs dandogli un nome generato casualmente (con un codice di 8 cire); tale codice è restituito alla vista che poi termina comunicandolo all'utente; l'utente potrà accedere in modo statico attraverso una request al server tramite un'url con la seguente struttura:
   
-&emsp;&emsp;&emsp;&emsp; server_address/data/outputs/<codice>.
+&emsp;&emsp;&emsp;&emsp; http://server_address:port/data/outputs/codice
 
+### Esecuzione dello script di generazione (generator.py)
+
+Prima di passare all'implementazione dello script vediamo gli step computazionali più importanti per la generazione.
+
+ Ad alto livello, per la generazione di una singola immagine, è necessario eseguire i seguenti step:
+
+ - Download del modello da utilizzare
+ - Setup della pipeline di generazione
+ - Steps di inferenza della pipeline di generazione
+ - Conversione dell'immagine da latent-space a immagine vera e propria (Decoder VAE)
+
+In termini di comandi e risorse, tutto ciò viene implementanto nei seguenti passi:
+
+- Chiamate alla funzione from_petrained: (Download del modello e setup della pipeline)
+
+  Le chiamate a questa funzione, del tipo:
+
+  &emsp;&emsp;&emsp;&emsp;pipe = StableDiffusion*Pipeline.from_pretrained("model_repository",...)
+
+  Al primo avvio eseguono il download del modello specificato prendendolo dai repository di HuggingFace [3] e lo memorizzano nella cache di sistema; quindi provvedono a caricarlo in RAM. Nelle successive chiamate per uno stesso modello, questo è caricato in RAM raccogliendolo direttamente dalla cache di sistema; in corrispondenza di tali chiamate cè un elevato utilizzo del disco che può potenzialmente fare da bottleneck per il processo di generazione (specie nel caso di un HDD).
+
+  La specifica dell'opzione torch_dtype=torch.float16 negli argomenti di questa funzione specifica il tipo di tipo di variabile in cui memorizzare i pesi del modello. Di default è utilizzato un float32; nel caso venga specificato si può invece dimezzare la richiesta di spazio utilizzando dei float16; questo impatta enormemente la velocità di esecuzione, specie nelle GPU low end (solo con questa opzione è possibile ridurre il tempo di inferenza di un fattore 10)
+
+- Le chiamate alla funzione pipe.to("cuda"): (setup della pipeline)
+  
+  Queste caricano il modello sulla memoria GPU e la configurano per essere eseguite col modello computazionale CUDA di NVIDIA (https://docs.nvidia.com/deploy/cuda-compatibility/).
+
+
+
+
+### Alternativa in deploy
 
 ### Profiling
 
@@ -103,4 +134,7 @@ Resource peaks: al caricamento dei modelli e alla conversione delle immagini al 
 ## Resources Link
 
 [1] Kohya: https://github.com/kohya-ss/sd-scripts
+
 [2] Diffusers: https://huggingface.co/blog/stable_diffusion
+
+[3] HuggingFace: https://huggingface.co/
