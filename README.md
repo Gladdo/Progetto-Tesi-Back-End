@@ -221,3 +221,13 @@ In questo modo, a prescindere dalle problematiche (inarginabili) di memory leaks
 [2] Diffusers: https://huggingface.co/blog/stable_diffusion
 
 [3] HuggingFace: https://huggingface.co/
+
+Link ai modelli stable-diffusions utilizzati:
+
+Openpose controlnet: https://huggingface.co/lllyasviel/control_v11p_sd15_openpose
+
+Inpainting: https://huggingface.co/runwayml/stable-diffusion-inpainting
+
+Detailing: https://huggingface.co/dreamlike-art/dreamlike-photoreal-2.0
+
+
