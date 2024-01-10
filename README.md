@@ -122,8 +122,19 @@ In termini di comandi e risorse, tutto ciò viene implementanto nei seguenti pas
   
   Queste caricano il modello sulla memoria GPU e la configurano per essere eseguite col modello computazionale CUDA di NVIDIA (https://docs.nvidia.com/deploy/cuda-compatibility/).
 
+- Le chiamate alla funzione: pipe.enable_xformers_memory_efficient_attention() (setup della pipeline)
 
+  Queste chiamate specificano di utilizzare determinati meccanismi di ottimizzazione nell'esecuzione dell'inferenza (per poter usare questa funzione è necessario aver installato il package python xformers nell'ambiente)
 
+- Le chiamate pipe(...): (Inferenza e conversione latent-space -> immagine)
+
+  Queste chiamate, del tipo:
+
+  &emsp;&emsp;&emsp;&emsp; result_img = pipe(...).image[0]
+
+  Danno il via al vero e proprio algoritmo di inferenza; la loro esecuzione è localizzata sulla memoria della GPU che infatti, in corrispondenza di questi comandi, raggiunge livelli elevati (nel caso di 6GB cè un'utilizzo del 100%).
+
+  Al termine dell'inferenza cè un picco nell'utilizzo della RAM, presupponibilmente per la conversione dell'immagine da latent space ad immagine vera e propria (non sono riuscito a trovare eventuale documentazione della libreria che giustifichi tale sforzo ). 
 
 ### Alternativa in deploy
 
