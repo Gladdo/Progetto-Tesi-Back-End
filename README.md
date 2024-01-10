@@ -1,8 +1,8 @@
 # INSTALLAZIONE
 
-## Tramite Compose
+### Tramite Compose
 
-## Tramite Dockerfile manualmente
+### Tramite Dockerfile manualmente
 
 # SISTEMA
 
@@ -26,8 +26,6 @@ memory=9GB
 ```
 
 NB: Fare attenzione a non cedere troppa RAM: oltre un certo limite si vincola il SO a rallentare e questo rallenta di conseguenza anche l'esecuzione del container. 
-
-
 
 ## TRAINING LORA
 
@@ -58,12 +56,16 @@ NB: SE SI MODIFICA QUESTO SCRIPT SU WINDOWS, ASSICURARSI CHE SUCCESSIVAMENTE SIA
 
 ### Profiling
 
-I tempi medi di esecuzione del training nel sistema di riferimento vanno dai 60 ai 90 minuti con uso delle risorse stabile (non cè nessun picco sulla richiesta di risorse)
+I tempi medi di esecuzione del training nel sistema di riferimento vanno dai 60 ai 90 minuti; l'uso delle risorse è stabile (non cè nessun picco sulla richiesta di risorse)
 
-## Generazione
+## GENERAZIONE
+
+### Flow di esecuzione
+
+### Profiling
 
 Resource peaks: al caricamento dei modelli e alla conversione delle immagini al termine della generazione
 
-# Resources Link
+## Resources Link
 
 [1] Kohya: https://github.com/kohya-ss/sd-scripts
