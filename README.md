@@ -95,7 +95,7 @@ Impostati i precedenti parametri, la vista procede nel seguente modo:
   
 &emsp;&emsp;&emsp;&emsp; http://server_address:port/data/outputs/codice
 
-### Esecuzione dello script di generazione (generator.py)
+### Profiling dei comandi nello script di generazione (generator.py)
 
 Prima di passare all'implementazione dello script vediamo gli step computazionali più importanti per la generazione.
 
@@ -134,7 +134,27 @@ In termini di comandi e risorse, tutto ciò viene implementanto nei seguenti pas
 
   Danno il via al vero e proprio algoritmo di inferenza; la loro esecuzione è localizzata sulla memoria della GPU che infatti, in corrispondenza di questi comandi, raggiunge livelli elevati (nel caso di 6GB cè un'utilizzo del 100%).
 
-  Al termine dell'inferenza cè un picco nell'utilizzo della RAM, presupponibilmente per la conversione dell'immagine da latent space ad immagine vera e propria (non sono riuscito a trovare eventuale documentazione della libreria che giustifichi tale sforzo ). 
+  Al termine dell'inferenza cè un picco nell'utilizzo della RAM, presupponibilmente per la conversione dell'immagine da latent space ad immagine vera e propria (non sono riuscito a trovare eventuale documentazione della libreria che giustifichi tale sforzo ).
+
+### Esecuzione dello script
+
+Esistono due script per la generazione, generator.py e generator_classic.py; il primo implementa gli stessi identici passi del secondo apportando delle ottimizzazioni per il motivo spiegato a breve, mentre il secondo è una descrizione sequenziale più elengate degli stessi passi computazionali; per questo motivo, per comprendere meglio ciò che viene eseguito, si fa riferimento a generator_classic.py. 
+
+L'esecuzione dell'intero script si può riassumere nel seguente flow:
+
+1. Si configura i prompt, specificandone una struttura sufficientemente funzionale da essere configurabile e allo stesso tempo triggerare le cose giuste durante l'inferenza; si riempie i campi di tale struttura utilizzando gli elementi passati come argomento alla funzione di generazione (quali descrizione del soggetto (age, gender, posa) e descrizione dell'ambiente (in poi_image))
+2. Si effettua uno step di inpainting, utilizzando una pipeline ControlNet, per generare il soggetto sopra l'immagine di background scelta dal database; la pipeline ControlNet consente di combinare due meccanismi che guidano la generazione, quali:
+  - Condizionamento della generazione a riprodurre la posa specificata utilizzando il modello openpose "lllyasviel/control_v11p_sd15_openpose"
+  - Condizionamento della generazione per effettuare l'inpaiting del soggetto utilizzando il modello "runwayml/stable-diffusion-inpainting"
+Grazie alla ControlNet è possibile combinare questi due passaggi in un'unico step di inferenza che combina inpainting e scelta della posa.
+3. Si effettua uno step di inpaiting sul risultato della precedente operazione per aumentare i dettagli dell soggetto inpaintato; questo step lavora SOLO su un'area specifica dell'immagine, quella definita dalla maschera associata alla posa (ed in cui sarà sicuramente contenuto il soggetto generato precedentemente); si utilizza il modello "dreamlike-art/dreamlike-photoreal-2.0"
+4. Si effettua dinuovo il punto 3
+5. Si effettua adesso uno step di Img2Img che prende il risultato precedente ed effettua un'omogenizzazione della qualità dell'immagine
+6. Se è stato scelto un LoRA, si fa un'ultimo step di inpainting per l'inserimento del volto del soggetto; anche in questo step di inpainting si va ad agire su una specifica maschera (in cui sarà sicuramente contenuto il volto del soggetto data la struttura di generazione)
+
+(Per la ricerca dietro alla scelta di questa struttura, vedere la tesi)
+
+### Profiling dei vari step
 
 ### Alternativa in deploy
 
