@@ -11,12 +11,15 @@ Con docker installato e la working directory nella folder del progetto, eseguire
 Con docker installato e la working directory nella folder del progetto, eseguire i comandi:
 
 - Per creare l'immagine specificata nel Dockerfile:
+  
 &emsp;&emsp;&emsp;&emsp;docker build -t image_name .
 
 - Per avviare un container sull'immagine precedentemente creata e accederne alla shell: (l'opzione --gpus all serve per consentire al container di accedere alla GPU del sistema che esegue il container )
+
 &emsp;&emsp;&emsp;&emsp;docker run -it --gpus all -p 8000:8000 image_name
 
 - Attraverso la shell avviata precedentemente, per avviare il server dell'applicazione entrare con la working directory in app/djangoproject ed avviare il server col comando:
+  
 &emsp;&emsp;&emsp;&emsp;python3 manage.py runserver 0.0.0.0:8000
 
 
