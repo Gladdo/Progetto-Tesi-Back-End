@@ -30,7 +30,7 @@ I tempi e le considerazioni fatte sono in relazione alle seguenti risorse:
 - GPU: NVIDIA GeForce GTX 1060 (6GB GPU dedicated memory)
 - RAM: 16 GB
 - OS: Docker Desktop on Windows 10 with WSL2
-- Drive: HDD (no SSD were available)
+- Drive: HDD (no SSD was available)
 - CPU Intel Core i5-8600k @ 3.60GHz
 
 L'esecuzione su container Docker richiede che al container venga fornito almeno 9GB di RAM (l'utilizzo medio della RAM è inferiore ma ci sono dei peak sulla richiesta di risorse durante alcune fasi della generazione, come specificato successivamente) 
