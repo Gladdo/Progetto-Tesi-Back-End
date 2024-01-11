@@ -238,11 +238,11 @@ In relazione al tempo di setup della pipeline è invece necessario fare la segue
 
 ### Osservazione: generator.py vs generator_classic.py
 
-Nonostante implementano gli stessi step computazionali, la necessità di generator.py rispetto a generator_classic.py nasce dal seguente problema riscontrato: quando si alterna i modelli di generazione in RAM la libreria diffusers produce dei Memory Leak; questi, gradualmente su diverse generazioni, rischiano di farla straripare (per via del garbage collector di python questi leaks non avvengono in modo consistente e riproducibile, ma spesso avvengono).
+Nonostante implementano gli stessi step computazionali, la necessità di generator.py rispetto a generator_classic.py nasce dal seguente problema riscontrato: quando si alterna i modelli di generazione in RAM a volte la libreria diffusers produce dei Memory Leak; non avvengono in modo consistente o riproducibile, ma è evidente che su dopo diverse generazioni l'utilizzo della RAM non è correlato all'attività in esecuzione.
 
-Per ovviare a tale problema, che è possibile ancora riscontrare se si va ad utilizzare lo script generator_classic.py, ho optato per la seguente strategia: gli step di generazione, dove carico i modelli in RAM, sono tutti eseguiti utilizzando dei subprocess; i vari step si comunicano le immagini semplicemente salvandole sul disco (proprio attraverso la folder tmp_data citata in precedenza).
+Per ovviare completamente a tale problema, che è possibile ancora riscontrare se si va ad utilizzare lo script generator_classic.py, ho optato per la seguente strategia: gli step di generazione, dove sono caricati e utilizzati i modelli in RAM, sono tutti eseguiti attraverso dei subprocess; i vari step si comunicano le immagini salvandole sul disco (proprio attraverso la folder tmp_data citata in precedenza).
 
-In questo modo, a prescindere dalle problematiche (inarginabili) di memory leaks inerenti alla libreria diffusers (e al poco controllo della memoria dovuto a python), al termine uno step di generazione si chiude il subproces che aveva caricato in RAM il modello; di conseguenza tutta la sua RAM è liberata, assieme ad eventuali problemi di leak dovuti al caricamento del modello in RAM.
+In questo modo, a prescindere dalle problematiche (inarginabili) di memory leaks inerenti alla libreria diffusers, quando al termine di uno step di generazione si chiude il subproces, tutta la sua RAM è liberata, assieme ad eventuali problemi di leak dovuti al caricamento del modello in RAM.
 
 ## TO-DO:
 
