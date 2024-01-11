@@ -228,7 +228,9 @@ Il tempo per quest'ultimo step di generazione può essere drasticalmente ridotto
  
 ### SUMMARY
 
-In generale la generazione di un'immagine, nel sistema di riferimento, richiede dai 10 ai 15 minuti; tuttavia gran parte dei rallentamenti sono per la gestione della di generazione piuttosto che per l'inferenza di generazione stessa: sommando i tempi di inferenza dei vari step questi di media impiegano solo 6 minuti complessivi, quantità che può essere drasticalmente ridotta riducendo la risoluzione dell'ultimo step o semplicemente utilizzando hardware più appropiati.
+La generazione di un'immagine, nel sistema di riferimento, richiede fino a 8GB di RAM, intenso uso del disco, intenso uso della memoria dedicata della GPU e richiede dai 10 ai 15 minuti di tempo.
+
+Tuttavia, per quanto riguarda il tempo, gran parte è utilizzato per la gestione delle pipeline di generazione piuttosto che per l'inferenza stessa: sommando i tempi di inferenza dei vari step questi di media impiegano solo 6 minuti complessivi, quantità che può essere drasticalmente ridotta riducendo la risoluzione dell'ultimo step o semplicemente utilizzando hardware più appropiati.
 
 In relazione al tempo di setup della pipeline è invece necessario fare la seguente osservazione: nel caso del sistema di riferimento si ha a disposizone una RAM contenuta e diventa dunque necessario alternare la presenza dei vari modelli in esecuzione; in una situazione di deploy, su macchine adeguate, è possibile evitare questa alternanza e caricare le pipeline una sola volta all'avvio dell'applicazione, riducendo drasticamente i tempi di generazione.
 
