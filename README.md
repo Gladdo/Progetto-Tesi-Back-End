@@ -72,7 +72,7 @@ L'addestramento è eseguito su 5 immagini dell'utente; su ciascuna di queste vie
 
 L'addestramento è ottenuto facendo uso degli script nel seguente repository [1]; l'applicazione segue il seguente flow:
 
-- L'utente seleziona nel front-end le 5 immagini con cui creare il modello LoRA e le comunica alla vista LoraTraining nell'app diffuser_api dsul server Django
+- L'utente seleziona nel front-end le 5 immagini con cui creare il modello LoRA; quindi le comunica alla vista LoraTraining nell'app diffuser_api presente sul server Django
 - La vista LoraTraining controlla che siano presenti le 5 immagini nel body della request
 - Se il controllo va a buon fine la vista genera un codice di 8 cifre (LoraCode); tale codice è comunicato:
   - allo script training_dispatcher che lancia un subprocess dove viene effettuato il training
@@ -83,7 +83,7 @@ Il dispatcher che lancia l'addestramento esegue i seguenti passi:
 - crea una folder all'interno della folder training-app/training-input, specifica per l'utente per cui si sta eseguendo il training; a questa è assegnato come nome il codice LoRA appena generato e al suo interno viene predisposto le immagini dell'utente  
 - avvia un subprocess per l'esecuzione dello script launch.bash presente nella folder training-app
 
-Lo script launch.bash:
+Per quanto riguarda lo script launch.bash:
 
 - La prima riga contiene il comando per l'avvio del training, implementato dallo script train_network.py nella folder kohya-scripts; eventuali configurazioni del training sono da fare nei parametri di questo comando.
 - Quando il training è ultimato, launch.bash esegue lo script post-back.py; questo manda un comando di POST al server Django richiedendo di aggiungere il modello LoRA creato ai modelli LoRA disponibili sull'applicazione.
@@ -93,7 +93,7 @@ NB: SE SI MODIFICA QUESTO SCRIPT SU WINDOWS, ASSICURARSI CHE SUCCESSIVAMENTE SIA
 
 ### Profiling
 
-I tempi medi di esecuzione del training nel sistema di riferimento vanno dai 60 ai 90 minuti; l'uso delle risorse è stabile (non cè nessun particolare picco sulla richiesta di risorse)
+I tempi medi di esecuzione del training nel sistema di riferimento vanno dai 60 ai 90 minuti e utilizzano in modo notevole solo la GPU; l'uso delle risorse è stabile (non cè nessun particolare picco sulla richiesta di risorse)
 
 ## GENERAZIONE
 
@@ -156,7 +156,7 @@ In termini di comandi e risorse, tutto ciò viene implementanto nei seguenti pas
 
   &emsp;&emsp;&emsp;&emsp;pipe = StableDiffusion*Pipeline.from_pretrained("model_repository",...)
 
-  Alla prima call eseguono il download del modello specificato prendendolo dai repository di HuggingFace [3] e lo memorizzano nella cache di sistema; quindi provvedono a caricarlo in RAM. Nelle successive chiamate, per uno stesso modello, questo è caricato in RAM raccogliendolo direttamente dalla cache di sistema; in corrispondenza di tali chiamate cè un elevato utilizzo del disco che non ha in generale causato eccessivi rallentamenti; in un caso specifico, quando quando l'utilizzo del disco era associato a poca RAM disponibile, è stato riscontrato un rallentamento eccessivo che ha fatto da bottleneck per il processo di generazione.
+  Alla prima call eseguono il download del modello specificato prendendolo dai repository di HuggingFace [3] e lo memorizzano nella cache di sistema; quindi provvedono a caricarlo in RAM. Nelle successive chiamate, per uno stesso modello, questo è caricato in RAM raccogliendolo direttamente dalla cache di sistema; in corrispondenza di tali chiamate cè un elevato utilizzo del disco che non ha in generale causato eccessivi rallentamenti; in un caso specifico, quando quando l'utilizzo del disco era combinato a poca RAM disponibile, è stato riscontrato un rallentamento eccessivo che ha fatto da bottleneck per il processo di generazione.
 
   La specifica dell'opzione torch_dtype=torch.float16 negli argomenti di questa funzione specifica il tipo di variabile in cui memorizzare i pesi del modello. Di default è utilizzato un float32; nel caso venga specificato si può invece dimezzare la richiesta di spazio utilizzando dei float16; questo impatta enormemente la velocità di esecuzione, specie nelle GPU low end
   
