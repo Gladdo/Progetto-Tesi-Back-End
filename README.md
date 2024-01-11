@@ -68,7 +68,7 @@ NB: Fare attenzione a non cedere troppa RAM: oltre un certo limite si vincola il
 
 ### Flow di esecuzione
 
-L'addestramento è eseguito su 5 immagini dell'utente; su ciascuna di queste viene fatto 300 iterazioni di training (per un totale di 1500 iterazioni); tale configurazione di addestramento sono ritenute minime per quanto riguarda la cultura del fine tuning con LoRA.
+L'addestramento è eseguito su 5 immagini dell'utente; su ciascuna di queste viene fatto 300 iterazioni di training (per un totale di 1500 iterazioni); tale configurazione di addestramento sono ritenute minime per quanto riguarda la cultura del fine tuning con LoRA. (Generalmente eseguito su un maggior numero di immagini e un maggior numero di iterazioni)
 
 L'addestramento è ottenuto facendo uso degli script nel seguente repository [1]; l'applicazione segue il seguente flow:
 
