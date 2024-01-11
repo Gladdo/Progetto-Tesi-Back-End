@@ -209,7 +209,7 @@ Lo step 6 è invece quello più critico per i seguenti motivi:
   
   Se ad esempio le immagini di training sono tutte addestrate su dei primi piani 1980x1080, quando poi il modello è utilizzato per generare il volto di una persona inquadrata che appare per intero (da testa a piedi) in una immagine 512x512, dove quindi il volto ricoprirà un'area di circa 50x50 pixel, il modello è incapace di sintetizzare il volto su tale dimensione ristretta. 
 
-(Presuppongo che l'idea intuitiva dietro a questo problema è che un modello LoRA, addestrato con tutti primi piani, lega la dimensione in pixel al concetto del volto; se invece si utilizza immagini con differenti dimensioni del volto allora il modello ne apprende le proporzioni: il concetto del volto diventa legato alle proporzioni piuttosto che alle specifiche dimensioni in pixel; di conseguenza la generazione è capace di sintetizzarlo a diverse risoluzioni)
+(Intuitivamente l'idea dietro a questo problema è che un modello LoRA, addestrato con tutti primi piani di una stessa risoluzione, lega la dimensione in pixel al concetto del volto; se invece si utilizza immagini con differenti dimensioni del volto allora il modello ne apprende le proporzioni: il concetto del volto diventa legato alle proporzioni piuttosto che alle specifiche dimensioni in pixel; di conseguenza la generazione è capace di sintetizzarlo a diverse risoluzioni)
 
 In generale, durante i test e il profiling della generazione, è nello step 6 che si presentava maggior rischio che il container docker si chiudesse con errore 247 ( legato ad una richiesta di memoria maggiore a quella fornita) e ciò ha richiesto una aggiunta preventiva di RAM ( 9GB sono sufficienti ).
 
