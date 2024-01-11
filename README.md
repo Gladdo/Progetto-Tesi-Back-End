@@ -118,6 +118,8 @@ Forniti i precedenti parametri la vista procede nel seguente modo:
 
 ### Profiling dei comandi nello script di generazione (generator.py)
 
+(Per evitare il profiling dettagliato, saltare più in basso al Summary)
+
 Prima di passare all'implementazione dello script vediamo gli step computazionali più importanti per la generazione.
 
  Ad alto livello, per la generazione di una singola immagine, è necessario eseguire i seguenti step:
@@ -226,7 +228,7 @@ Tornando al profiling del punto 6 dunque si osserva:
   - Circa 2 minuti a termine dell'inferenza con picchi di ram fino a 8 GB
 Il tempo per quest'ultimo step di generazione può essere drasticalmente ridotto, fino a renderlo in linea con quello degli altri step, semplicemente abbassando la risoluzione dell'immagine in output; per fare ciò basta cambiare i parametri dell'ultima chiamata a pipe(...) nello script di generazione.
  
-### SUMMARY
+### SUMMARY Profiling della generazione
 
 La generazione di un'immagine, nel sistema di riferimento, richiede fino a 8GB di RAM, intenso uso del disco, intenso uso della memoria dedicata della GPU e richiede dai 10 ai 15 minuti di tempo.
 
