@@ -1,3 +1,21 @@
+## Content
+
+1. Installazione
+2. Sistema di riferimento
+3. Training Lora
+   1. Flow di esecuzione
+   2. Profiling
+4. Generazione
+   1. Flow di esecuzione
+        1. Interfaccia dell'API
+        2. Esecuzione della vista
+   2. Profiling
+        1. Profiling comandi utilizzati
+        2. Esecuzione dello script di generazione
+        3. Profiling dello script di generazione
+        4. Summary
+5. Resources
+
 # INSTALLAZIONE
 
 ### Tramite Compose
@@ -116,7 +134,8 @@ Forniti i precedenti parametri la vista procede nel seguente modo:
   
 &emsp;&emsp;&emsp;&emsp; http://server_address:port/data/outputs/codice
 
-### Profiling dei comandi nello script di generazione (generator.py)
+### Profiling
+#### Profiling dei comandi nello script di generazione (generator.py)
 
 (Per evitare il profiling dettagliato, saltare più in basso al Summary)
 
@@ -161,7 +180,7 @@ In termini di comandi e risorse, tutto ciò viene implementanto nei seguenti pas
 
 Vediamo ora come questi passi sono combinati per ottenere lo script di generazione
 
-### Esecuzione dello script
+#### Esecuzione dello script
 
 Esistono due script per la generazione, generator.py e generator_classic.py; il primo implementa gli stessi identici passi del secondo apportando delle ottimizzazioni per il motivo spiegato a breve, mentre il secondo è una descrizione sequenziale, più elengate, degli stessi passi computazionali; per questo motivo, per comprendere meglio ciò che viene eseguito, si fa riferimento a generator_classic.py, anche se l'effettivo script utilizzato dall'applicazione è generator.py. 
 
@@ -185,7 +204,7 @@ Per fare il merge tuttavia, tale script deve caricare in RAM (e successivamente 
 Conviene specificare che ad ogni step le immagini intermedie generate vengono salvate temporaneamente sul disco; queste sono collocate dentro tmp_data, all'interno di una folder che ha come nome il codice prodotto a inizio generazione. All'interno di tale folder viene inoltre temporaneamente salvato anche il modello prodotto dallo step 6. / 
 Tale folder è eliminata a termine della generazione e l'immagine di output finale è memorizzata nella folder data/outputs con nome uguale al precedente codice.
 
-### Profiling dello script di generazione
+#### Profiling dello script di generazione
 
 Come accennato precedentemente, i punti critici sono nei momenti in cui:
 
@@ -228,7 +247,7 @@ Tornando al profiling del punto 6 dunque si osserva:
   - Circa 2 minuti a termine dell'inferenza con picchi di ram fino a 8 GB
 Il tempo per quest'ultimo step di generazione può essere drasticalmente ridotto, fino a renderlo in linea con quello degli altri step, semplicemente abbassando la risoluzione dell'immagine in output; per fare ciò basta cambiare i parametri dell'ultima chiamata a pipe(...) nello script di generazione.
  
-### SUMMARY Profiling della generazione
+#### SUMMARY Profiling della generazione
 
 La generazione di un'immagine, nel sistema di riferimento, richiede fino a 8GB di RAM, intenso uso del disco, intenso uso della memoria dedicata della GPU e richiede dai 10 ai 15 minuti di tempo.
 
@@ -236,7 +255,7 @@ Tuttavia, per quanto riguarda il tempo, gran parte è utilizzato per la gestione
 
 In relazione al tempo di setup della pipeline è invece necessario fare la seguente osservazione: nel caso del sistema di riferimento si ha a disposizone una RAM contenuta e diventa dunque necessario alternare la presenza dei vari modelli in esecuzione; in una situazione di deploy, su macchine adeguate, è possibile evitare questa alternanza e caricare le pipeline una sola volta all'avvio dell'applicazione, riducendo drasticamente i tempi di generazione.
 
-### Osservazione: generator.py vs generator_classic.py
+#### Osservazione: generator.py vs generator_classic.py
 
 Nonostante implementano gli stessi step computazionali, la necessità di generator.py rispetto a generator_classic.py nasce dal seguente problema riscontrato: quando si alterna i modelli di generazione in RAM a volte la libreria diffusers produce dei Memory Leak; non avvengono in modo consistente o riproducibile, ma è evidente che su dopo diverse generazioni l'utilizzo della RAM non è correlato all'attività in esecuzione.
 
