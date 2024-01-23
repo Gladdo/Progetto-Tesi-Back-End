@@ -9,7 +9,9 @@ services:
           devices:
             - driver: 'nvidia'
               count: all
-              capabilities: [gpu]
+          limits:
+            cpus: '0.5'
+            memory: '512M'
     tty: true
     working_dir: /app/djangoproject
     command:
