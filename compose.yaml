@@ -7,8 +7,8 @@ services:
       resources:
         reservations:
           devices:
-            - driver: nvidia
-              device_ids: ["0"]
+            - driver: 'nvidia'
+              count: all
               capabilities: [gpu]
     tty: true
     working_dir: /app/djangoproject
