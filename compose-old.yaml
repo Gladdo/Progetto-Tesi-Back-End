@@ -1,0 +1,22 @@
+services:
+    web:
+        build: .
+        ports:
+            - "8000:8000"
+        deploy:
+          resources:
+            reservations:
+              devices:
+                - driver: nvidia
+                  count: all
+                  capabilities: [gpu]
+        tty: true
+        working_dir: /app/djangoproject
+        command: 
+        - /bin/sh
+        - -c
+        - |
+            export admin_username=admin
+            export admin_password=1234
+            python3 manage.py runserver 0.0.0.0:8000
+        
