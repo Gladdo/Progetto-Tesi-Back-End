@@ -16,7 +16,7 @@ services:
         - /bin/sh
         - -c
         - |
-            export admin_username=admin
-            export admin_password=1234
+            export admin_username=old
+            export admin_password=old
             python3 manage.py runserver 0.0.0.0:8000
         
