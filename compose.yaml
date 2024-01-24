@@ -2,7 +2,7 @@ services:
   web:
     build: .
     ports:
-      - "8000:8000"
+      - "8007:8000"
     tty: true
     working_dir: /app/djangoproject
     command:
