@@ -3,6 +3,13 @@ services:
     build: .
     ports:
       - "8007:8000"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     tty: true
     working_dir: /app/djangoproject
     command:
@@ -12,4 +19,3 @@ services:
         export admin_username=${DJANGO_ADMIN_USERNAME}
         export admin_password=${DJANGO_ADMIN_PASSWORD}
         python3 manage.py runserver 0.0.0.0:8000
-    runtime: nvidia
