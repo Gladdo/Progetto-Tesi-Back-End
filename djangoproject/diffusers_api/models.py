@@ -17,7 +17,8 @@ class POIImage(models.Model):
     poi = models.ForeignKey(POI, on_delete=models.CASCADE)
 
     name = models.CharField(max_length=30, unique=True)  
-    description = models.CharField(max_length=65)
+    prompt_description = models.CharField(max_length=65)
+    user_description = models.TextField()
 
     # Gladdo: funzione che ritorna il path dei file; la current directory da cui viene elaborato il path è specificato nella variabile
     # MEDIA_URL in settings.py

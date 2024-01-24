@@ -11,7 +11,7 @@ class POIImageSerializer(serializers.ModelSerializer):
     poi = serializers.StringRelatedField()
     class Meta:
         model = POIImage
-        fields = ['poi', 'name', 'image']
+        fields = ['poi', 'name', 'image', 'user_description']
 
 class ActionSerializer(serializers.ModelSerializer):
     class Meta:

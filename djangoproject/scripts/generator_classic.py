@@ -48,7 +48,7 @@ def generate(
         case "FUS":
             camera_position += "subject full shot, "
 
-    environment = poi_image.description + ", detailed background, "
+    environment = poi_image.prompt_description + ", detailed background, "
 
     quality_modifiers = "high quality, very detailed, " \
                         " best quality, perfect light, perfect shadows"

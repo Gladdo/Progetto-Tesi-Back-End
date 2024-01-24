@@ -6,7 +6,7 @@ class POIAdmin(admin.ModelAdmin):
     list_display = ["name"]
 
 class POIImageAdmin(admin.ModelAdmin):
-    list_display = ["poi", "name", "image", "description"]
+    list_display = ["poi", "name", "image", "user_description", "prompt_description"]
 
 class ActionAdmin(admin.ModelAdmin):
     list_display = ["name", "description"]
