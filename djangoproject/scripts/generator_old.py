@@ -18,10 +18,6 @@ import shutil
 
 from PIL import Image
 
-import sys
-sys.path.append('../scripts')
-from scripts.generator_background_manipulation import transform_background
-
 """---------------------------------------------------------------------------------------------------------------------
     STEP1
 ---------------------------------------------------------------------------------------------------------------------"""
@@ -233,8 +229,6 @@ def generate(
     other_details,
     using_lora,
     lora_model,
-    is_background_edited,
-    background_editing_config
 ):
 
     unique_folder_name =  str(uuid.uuid4())[:8]
@@ -245,14 +239,7 @@ def generate(
     SETUP FILES
     ---------------------------------------------------------------------------------------------------------------------"""
 
-    theme_description = ""
-    weather_description = ""
     background_image = Image.open(poi_image.image)
-    if(is_background_edited):
-        background_image = transform_background(background_image, background_editing_config, user_data_path)
-        theme_description = background_editing_config['theme_description']
-        weather_description = background_editing_config['weather_description']
-
     pose_image = Image.open(action_image.pose_image)
     mask_image = Image.open(action_image.mask_image)
     mask_image_refined = Image.open(action_image.mask_image_refined)   
@@ -355,10 +342,7 @@ def generate(
     # ---------------------------------------------------------
     # Pipe 4 Configuration:------------------------------------
 
-    prompt4 = "Image of a " + subject \
-        + "in " + environment + ", " + theme_description + ", " + weather_description  + ", " \
-        + camera_position \
-        + quality_modifiers
+    prompt4 = prompt
     negative_prompt4 = negative_prompt
 
     inference_steps4 = 50

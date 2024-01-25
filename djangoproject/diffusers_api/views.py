@@ -42,6 +42,13 @@ poi_name=<value>
 &dynamic_action_selection=[true|false] 
 &action_prompt=<value>
 
+&is_background_edited
+&theme_description
+&weather_description
+&is_theme_set
+&is_weather_set
+&is_night_time
+
 # esempio: 
 http://127.0.0.1:8000/diffusers_api/generate_image?poi_name=boboli&poi_image_name=tunnel&action_name=wave_hand_1&action_shot_type=CLS&age=young&gender=woman&other_details=red%20shirt&selected_lora=gladdo
 """
@@ -85,6 +92,33 @@ def GenerateImage(request):
     gender = request.GET.get("gender")
     other_details = request.GET.get("other_details")
 
+    # Configurazioni di editing per il background
+    is_background_edited_str = request.GET.get("is_background_edited")
+    is_background_edited = False
+    background_editing_config = {}
+
+    if(is_background_edited_str == "true"):
+        is_background_edited = True
+
+        is_weather_set = False
+        is_theme_set = False
+        is_night_time = False
+
+        if(request.GET.get("is_weather_set") == "true"):
+            is_weather_set = True
+        if(request.GET.get("is_theme_set") == "true"):
+            is_theme_set = True
+        if(request.GET.get("is_night_time") == "true"):
+            is_night_time = True
+
+        background_editing_config = {
+            'theme_description' : request.GET.get("theme_description"),
+            'weather_description' : request.GET.get("weather_description"),
+            'is_weather_set' : is_weather_set,
+            'is_theme_set' : is_theme_set,
+            'is_night_time' : is_night_time
+        }
+
     # Chiamata allo script di generazione
     """
     # PER GENERATORE CLASSICO
@@ -95,7 +129,7 @@ def GenerateImage(request):
     """
 
     #For ram free:
-    unique_file_name = generate(poi_obj, poi_image_obj, action_obj, action_image_obj, age, gender, other_details, using_lora, selected_lora)
+    unique_file_name = generate(poi_obj, poi_image_obj, action_obj, action_image_obj, age, gender, other_details, using_lora, selected_lora, is_background_edited, background_editing_config)
     url_json = { "url" : settings.MEDIA_URL + "outputs/" + unique_file_name }
 
     return JsonResponse(url_json, safe=False)
@@ -129,6 +163,15 @@ def DBSummary(request):
     "actions" : action_objects_serializer.data}
    
     return JsonResponse(serializer_data, safe=False)
+
+def GetActions(request):
+    action_objects = Action.objects.all()
+    action_objects_serializer = ActionSerializer(action_objects, many=True)
+
+    serializer_data = {"actions" : action_objects_serializer.data}
+
+    return JsonResponse(serializer_data, safe=False) 
+
 
 """---------------------------------------------------------------------------------------------------------------------
     VIEW | POI IMAGES FROM POI NAME (GET)
