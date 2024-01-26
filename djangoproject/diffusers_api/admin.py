@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import POI, POIImage, Action, ActionImage, LoraModel, DispatchedLoraCodes
+from .models import POI, POIImage, Action, ActionImage, LoraModel, DispatchedLoraCodes, FECity, FEArea, FEPoiMarker
 # Register your models here.
 
 class POIAdmin(admin.ModelAdmin):
@@ -26,3 +26,16 @@ admin.site.register(POI, POIAdmin)
 admin.site.register(POIImage, POIImageAdmin)
 admin.site.register(Action, ActionAdmin)
 admin.site.register(ActionImage, ActionImageAdmin)
+
+class FECityAdmin(admin.ModelAdmin):
+    list_display = ["city_name"]
+
+class FEAreaAdmin(admin.ModelAdmin):
+    list_display = ["city", "area_number", "canvas_x_pos", "canvas_y_pos", "area_image", "connected_areas" ]
+
+class FEPoiMarkerAdmin(admin.ModelAdmin):
+    list_display = ["city", "area_number", "poi", "x_pos", "y_pos", "overview_image"]
+
+admin.site.register(FECity, FECityAdmin)
+admin.site.register(FEArea, FEAreaAdmin)
+admin.site.register(FEPoiMarker, FEPoiMarkerAdmin)

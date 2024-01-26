@@ -10,13 +10,14 @@ from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect, csrf_
 from django.conf import settings
 
 # App item imports:
-from .models import POI, POIImage, Action, ActionImage, LoraModel, DispatchedLoraCodes
+from .models import POI, POIImage, Action, ActionImage, LoraModel, DispatchedLoraCodes, FECity, FEArea, FEPoiMarker
 from .serializers import POISerializer, POIImageSerializer, ActionSerializer, LoraModelSerializer
 from .forms import ImageUploadForm
 
 # Utilities imports:
 import uuid
 from PIL import Image
+from ast import literal_eval
 
 # Scripts imports
 import sys
@@ -290,6 +291,50 @@ def CheckLoraCode(request):
 
     response_data = {"result" : "Code doesn't exsists"}
     return JsonResponse(response_data, safe=False)
+
+"""---------------------------------------------------------------------------------------------------------------------
+    VIEW | GET MAPS DATA (GET)
+---------------------------------------------------------------------------------------------------------------------"""
+"""
+Questa vista consente di checkare lo stato del training del modello LoRA
+"""
+
+def GetMapsData(request):
+
+    cities = FECity.objects.all()
+    json_city_data = {}
+
+    for city in cities:
+
+        areas = FEArea.objects.filter(city=city)
+        city_areas = []
+
+        for area in areas:
+
+            markers = FEPoiMarker.objects.filter(city=city, area_number=area.area_number)
+            markers_data = []
+
+            for marker in markers:
+
+                markers_data.append({
+                    "position": {"x": marker.x_pos, "y": marker.y_pos},
+                    "value": marker.poi.name,
+                    "popup_image": "http://" + request.get_host() + marker.overview_image.url,
+                })
+
+            city_areas.append({ 
+                "canvas_position": {"x": area.canvas_x_pos, "y": area.canvas_y_pos},
+                "markers" : markers_data,
+                "background_image": "http://" + request.get_host() + area.area_image.url,
+                "connected_areas": literal_eval(area.connected_areas),
+            })
+
+                
+        json_city_data[city.city_name] = city_areas
+
+    return JsonResponse(json_city_data, safe=False)
+
+
 
 
 

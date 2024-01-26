@@ -1,6 +1,7 @@
 from django.db import models
 from enum import Enum
 import os
+from django.core.validators import int_list_validator
 
 # Create your models here.
 
@@ -94,4 +95,45 @@ class LoraModel(models.Model):
 class DispatchedLoraCodes(models.Model):
 
     code = models.CharField(max_length=8, unique=True)
+
+
+# -----------------------------------------------------------------------------------
+#                              MOBILE FRONT END DATA
+# -----------------------------------------------------------------------------------
+
+class FECity(models.Model):
+    city_name = models.CharField(max_length=30, unique=True)
+
+    def __str__(self):
+        return self.city_name
+
+class FEArea(models.Model):
+    city = models.ForeignKey(FECity, on_delete=models.CASCADE)
+    area_number = models.IntegerField()
+    canvas_x_pos = models.FloatField()
+    canvas_y_pos = models.FloatField()
+
+    def area_image_path(instance, filename):
+        return 'poi_maps/' + instance.city.city_name + '/' + filename
+
+    area_image = models.ImageField(upload_to=area_image_path)
+    connected_areas = models.CharField(validators=[int_list_validator], max_length=30)
+
+class FEPoiMarker(models.Model):
+    city = models.ForeignKey(FECity, on_delete=models.CASCADE)
+    area_number = models.IntegerField()
+    x_pos = models.IntegerField()
+    y_pos = models.IntegerField()
+
+    poi = models.ForeignKey(POI, on_delete=models.CASCADE)
+
+    def overview_image_path(instance, filename):
+        return 'poi_maps/' + instance.city.city_name + '/overviews/' + filename
+
+    overview_image = models.ImageField(upload_to=overview_image_path)
+
+
+
+
+
 
