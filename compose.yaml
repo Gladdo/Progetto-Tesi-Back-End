@@ -16,6 +16,6 @@ services:
       - /bin/sh
       - -c
       - |
-        export admin_username=${DJANGO_ADMIN_USERNAME}
-        export admin_password=${DJANGO_ADMIN_PASSWORD}
+        export admin_username=theloneadmin
+        export admin_password=DjangoIsBellissimo93
         python3 manage.py runserver 0.0.0.0:8000
